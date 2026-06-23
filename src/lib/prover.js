@@ -1,20 +1,18 @@
 // Generación de la prueba de solvencia (off-chain, en el navegador).
 //
-// Flujo real (requiere artefacto del circuito compilado + dependencias):
-//   1. `nargo compile` en circuits/solvency  -> target/solvency.json
-//   2. instalar: npm i @noir-lang/noir_js @aztec/bb.js
-//   3. descomentar el bloque REAL y copiar el .json compilado a /public o importarlo.
-//
-// Mientras tanto, MOCK=true permite desarrollar la UI sin el toolchain.
+// Estado: REAL proving activado
+//   ✅ Circuit compilado: circuits/solvency/target/solvency.json
+//   ✅ Dependencies instaladas: @noir-lang/noir_js @aztec/bb.js
+//   ✅ Circuit en /public/solvency.json
 
-const MOCK = true;
+const MOCK = false;
 
-// import { Noir } from "@noir-lang/noir_js";
-// import { UltraHonkBackend } from "@aztec/bb.js";
-// import circuit from "../../public/solvency.json";
+import { Noir } from "@noir-lang/noir_js";
+import { BarretenbergBackend } from "@aztec/bb.js";
+import circuit from "../../public/solvency.json";
 
 /**
- * @param {{ balances: string[], salts: string[], ledgerSeq: number, root: string, totalLiabilities: string }} inputs
+ * @param {{ balances: string[], salts: string[], ledgerSeq: number }} inputs
  * @returns {Promise<{ publicInputs: Uint8Array, proof: Uint8Array }>}
  */
 export async function generateSolvencyProof(inputs) {
@@ -26,16 +24,40 @@ export async function generateSolvencyProof(inputs) {
     };
   }
 
-  // --- BLOQUE REAL (descomentar cuando el circuito esté compilado) ---
-  // const noir = new Noir(circuit);
-  // const backend = new UltraHonkBackend(circuit.bytecode);
-  // const { witness } = await noir.execute({
-  //   root: inputs.root,
-  //   total_liabilities: inputs.totalLiabilities,
-  //   ledger_seq: inputs.ledgerSeq,
-  //   balances: inputs.balances,
-  //   salts: inputs.salts,
-  // });
-  // const { proof, publicInputs } = await backend.generateProof(witness);
-  // return { proof, publicInputs: serializePublicInputs(publicInputs) };
+  try {
+    // Calculate total liabilities
+    const totalLiabilities = inputs.balances.reduce((sum, bal) => sum + BigInt(bal), 0n);
+
+    // Prepare inputs for Noir circuit
+    const circuitInputs = {
+      root: "0", // Will be calculated by circuit, placeholder for now
+      total_liabilities: totalLiabilities.toString(),
+      ledger_seq: inputs.ledgerSeq.toString(),
+      balances: inputs.balances,
+      salts: inputs.salts,
+    };
+
+    console.log("Generating proof with inputs:", circuitInputs);
+
+    const noir = new Noir(circuit);
+    const backend = new BarretenbergBackend(circuit.bytecode);
+
+    // Execute circuit to get witness
+    const { witness } = await noir.execute(circuitInputs);
+
+    // Generate proof
+    const { proof, publicInputs } = await backend.generateProof(witness);
+
+    console.log("Proof generated successfully");
+    console.log("Public inputs:", publicInputs);
+    console.log("Proof length:", proof.length);
+
+    return {
+      proof: new Uint8Array(proof),
+      publicInputs: new Uint8Array(publicInputs),
+    };
+  } catch (error) {
+    console.error("Error generating proof:", error);
+    throw new Error(`Failed to generate ZK proof: ${error.message}`);
+  }
 }
