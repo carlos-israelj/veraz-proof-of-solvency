@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-vk": "node scripts/generate-vk.js"
   },
   "dependencies": {
     "@aztec/bb.js": "^4.3.1",
