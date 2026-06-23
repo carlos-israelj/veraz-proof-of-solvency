@@ -1,0 +1,22 @@
+{
+  "name": "proof-of-solvency-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^13.0.0",
+    "@stellar/freighter-api": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  },
+  "comment": "Para el proving real, añadir: @noir-lang/noir_js y @aztec/bb.js (ver src/lib/prover.js). Requiere Node 20+."
+}

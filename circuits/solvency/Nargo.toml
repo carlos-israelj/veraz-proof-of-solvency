@@ -1,0 +1,10 @@
+[package]
+name = "solvency"
+type = "bin"
+authors = [""]
+compiler_version = ">=1.0.0-beta.9"
+
+[dependencies]
+# Ajustar el tag a la versión de poseidon compatible con Noir 1.0.0-beta.9.
+# Referencia: el Nargo.toml de los circuitos en rs-soroban-ultrahonk (Nethermind).
+poseidon = { tag = "v0.1.0", git = "https://github.com/noir-lang/poseidon" }
