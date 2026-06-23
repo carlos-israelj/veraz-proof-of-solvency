@@ -4,7 +4,7 @@ Sistema de proof of solvency privado para emisores de stablecoins y RWA en Stell
 
 **Chainlink Proof of Reserves, pero privado, criptográfico y nativo de Stellar.**
 
-## 🚀 Estado del Proyecto: 90% Completo
+## 🚀 Estado del Proyecto: 95% Completo
 
 ✅ **Circuito Noir compilado** (29KB, Pedersen hash, 8 holders)
 ✅ **ZK Proving real activado** (UltraHonkBackend - compatible con verifier)
@@ -12,9 +12,10 @@ Sistema de proof of solvency privado para emisores de stablecoins y RWA en Stell
 ✅ **Frontend React completo** (Freighter wallet integration)
 ✅ **Sistema end-to-end funcional** (MOCK verifier mode)
 ✅ **Backend compatibility fix** (UltraPlonk → UltraHonk)
-⏳ **UltraHonk Verifier deployment** (bloqueado por herramientas de infraestructura)
+✅ **Verifier contract compilado** (25KB WASM, listo para deploy)
+⏳ **VK generation** (único blocker restante)
 
-**Estado actual:** El sistema genera pruebas ZK reales en formato UltraHonk (compatible con Nethermind verifier). El 10% restante es deployment del verifier, bloqueado por problemas de infraestructura (bb CLI installation, Rust version). Ver [BACKEND_COMPATIBILITY_FIX.md](./BACKEND_COMPATIBILITY_FIX.md) para detalles del fix.
+**Progreso reciente:** Rust blocker resuelto (1.93.1 + wasm32v1-none ya instalado), verifier compilado exitosamente. Solo falta el VK (5-10KB) para deployment completo. Ver [BLOCKER_RESOLUTION_UPDATE.md](./BLOCKER_RESOLUTION_UPDATE.md) para detalles.
 
 ### Testnet Deployment
 
