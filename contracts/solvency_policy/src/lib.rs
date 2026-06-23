@@ -12,7 +12,7 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, contracterror, contractmeta,
-    token::TokenClient, Address, Bytes, Env, Vec, Symbol,
+    token::TokenClient, Address, Bytes, Env, Vec, Symbol, IntoVal,
 };
 
 // Metadata del contrato
@@ -126,17 +126,12 @@ impl SolvencyPolicy {
         }
 
         // 3. Verificación criptográfica (cross-contract a Capa 1)
-        // TODO: En producción, descomentar y usar el verifier real:
-        // let verifier = verifier::Client::new(&env, &cfg.verifier);
-        // if !verifier.verify_proof(&public_inputs, &proof) {
-        //     return Err(Error::InvalidProof);
-        // }
-
-        // MOCK: Para el MVP, aceptamos cualquier prueba si proof no está vacío
-        if proof.len() == 0 && public_inputs.len() > 0 {
-            // Solo validamos que haya inputs públicos válidos
-            // En producción esto NO es seguro - requiere verificación ZK real
-        }
+        // Verifier deployado en testnet: CAU5ZPZSJSASGEDMKPBQHL26AFEMH3DQWWTG52Y77L5NWWSECBHJAFKA
+        env.invoke_contract::<()>(
+            &cfg.verifier,
+            &Symbol::new(&env, "verify_proof"),
+            (public_inputs.clone(), proof.clone()).into_val(&env),
+        );
 
         // 4. Leer reservas EN VIVO desde el ledger (sin auth: balance es read-only)
         let token = TokenClient::new(&env, &cfg.reserve_sac);
