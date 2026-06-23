@@ -8,9 +8,11 @@ Sistema de proof of solvency privado para emisores de stablecoins y RWA en Stell
 
 ✅ **Contratos Soroban desplegados en testnet**
 ✅ **Frontend React completo**
-✅ **Circuito Noir (Merkle-sum-tree) implementado**
+✅ **Circuito Noir compilado y funcionando**
+✅ **REAL ZK PROVING ACTIVADO** (no más MOCK!)
 ⏳ **Verifier UltraHonk (Layer 1) - integración pendiente**
-⏳ **Prover real - compilación de circuito pendiente**
+
+**🎉 Nuevo:** Pruebas ZK reales se generan en el navegador usando Noir + Barretenberg!
 
 ### Testnet Deployment
 
