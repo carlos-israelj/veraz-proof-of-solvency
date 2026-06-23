@@ -12,7 +12,7 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, contracterror, contractmeta,
-    token::TokenClient, Address, Bytes, BytesN, Env, Vec, Symbol,
+    token::TokenClient, Address, Bytes, Env, Vec, Symbol,
 };
 
 // Metadata del contrato
@@ -67,9 +67,9 @@ pub struct SolvencyPolicy;
 
 #[contractimpl]
 impl SolvencyPolicy {
-    /// Constructor: inicializa la configuración del emisor.
+    /// Inicializa la configuración del emisor.
     /// Solo puede llamarse una vez.
-    pub fn __constructor(env: Env, config: Config) -> Result<(), Error> {
+    pub fn initialize(env: Env, config: Config) -> Result<(), Error> {
         if env.storage().instance().has(&DataKey::Config) {
             return Err(Error::AlreadyInitialized);
         }
@@ -206,7 +206,7 @@ impl SolvencyPolicy {
     ///
     /// NOTA: Este parsing asume que los campos vienen como big-endian u128.
     /// En producción debe coincidir con el formato que emite bb.js (UltraHonk).
-    fn parse_public_inputs(env: &Env, pi: &Bytes) -> Result<(i128, u32), Error> {
+    fn parse_public_inputs(_env: &Env, pi: &Bytes) -> Result<(i128, u32), Error> {
         if pi.len() < 96 {
             return Err(Error::BadPublicInputs);
         }

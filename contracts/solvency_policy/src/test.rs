@@ -3,17 +3,9 @@
 use super::*;
 use soroban_sdk::{
     testutils::{Address as _, Ledger, LedgerInfo},
-    token::{StellarAssetClient, TokenClient},
-    Address, Env, String,
+    token::StellarAssetClient,
+    Address, Env,
 };
-
-fn create_token_contract<'a>(env: &Env, admin: &Address) -> (TokenClient<'a>, Address) {
-    let contract_id = env.register_stellar_asset_contract_v2(admin.clone());
-    (
-        TokenClient::new(env, &contract_id.address()),
-        contract_id.address(),
-    )
-}
 
 fn setup_test_env() -> (Env, Address, Address, Address, Address, Address) {
     let env = Env::default();
@@ -25,7 +17,7 @@ fn setup_test_env() -> (Env, Address, Address, Address, Address, Address) {
     let verifier = Address::generate(&env); // Mock verifier
 
     // Crear SAC de reserva (ej: USDC)
-    let (token_client, sac_address) = create_token_contract(&env, &admin);
+    let sac_address = env.register_stellar_asset_contract_v2(admin.clone()).address();
     let asset_client = StellarAssetClient::new(&env, &sac_address);
 
     // Mint tokens a la cuenta de reserva
@@ -38,7 +30,7 @@ fn setup_test_env() -> (Env, Address, Address, Address, Address, Address) {
 fn test_constructor() {
     let (env, _issuer, reserve_account, verifier, sac_address, _admin) = setup_test_env();
 
-    let contract_id = env.register_contract(None, SolvencyPolicy);
+    let contract_id = env.register(SolvencyPolicy, ());
     let client = SolvencyPolicyClient::new(&env, &contract_id);
 
     let mut reserve_accounts = Vec::new(&env);
@@ -51,7 +43,7 @@ fn test_constructor() {
         freshness_window: 100,
     };
 
-    client.__constructor(&config);
+    client.initialize(&config);
 
     // Verificar que la configuración se guardó
     let stored_config = client.get_config();
@@ -64,7 +56,7 @@ fn test_constructor() {
 fn test_constructor_prevents_reinitialization() {
     let (env, _issuer, reserve_account, verifier, sac_address, _admin) = setup_test_env();
 
-    let contract_id = env.register_contract(None, SolvencyPolicy);
+    let contract_id = env.register(SolvencyPolicy, ());
     let client = SolvencyPolicyClient::new(&env, &contract_id);
 
     let mut reserve_accounts = Vec::new(&env);
@@ -77,15 +69,15 @@ fn test_constructor_prevents_reinitialization() {
         freshness_window: 100,
     };
 
-    client.__constructor(&config);
-    client.__constructor(&config); // Debe fallar
+    client.initialize(&config);
+    client.initialize(&config); // Debe fallar
 }
 
 #[test]
 fn test_attest_solvent() {
     let (env, _issuer, reserve_account, verifier, sac_address, _admin) = setup_test_env();
 
-    let contract_id = env.register_contract(None, SolvencyPolicy);
+    let contract_id = env.register(SolvencyPolicy, ());
     let client = SolvencyPolicyClient::new(&env, &contract_id);
 
     let mut reserve_accounts = Vec::new(&env);
@@ -98,12 +90,12 @@ fn test_attest_solvent() {
         freshness_window: 100,
     };
 
-    client.__constructor(&config);
+    client.initialize(&config);
 
     // Configurar ledger
     env.ledger().set(LedgerInfo {
         timestamp: 1000000,
-        protocol_version: 20,
+        protocol_version: 22,
         sequence_number: 100,
         network_id: Default::default(),
         base_reserve: 10,
@@ -159,7 +151,7 @@ fn test_attest_solvent() {
 fn test_attest_insolvent() {
     let (env, _issuer, reserve_account, verifier, sac_address, _admin) = setup_test_env();
 
-    let contract_id = env.register_contract(None, SolvencyPolicy);
+    let contract_id = env.register(SolvencyPolicy, ());
     let client = SolvencyPolicyClient::new(&env, &contract_id);
 
     let mut reserve_accounts = Vec::new(&env);
@@ -172,11 +164,11 @@ fn test_attest_insolvent() {
         freshness_window: 100,
     };
 
-    client.__constructor(&config);
+    client.initialize(&config);
 
     env.ledger().set(LedgerInfo {
         timestamp: 1000000,
-        protocol_version: 20,
+        protocol_version: 22,
         sequence_number: 100,
         network_id: Default::default(),
         base_reserve: 10,
@@ -218,7 +210,7 @@ fn test_attest_insolvent() {
 fn test_attest_stale_proof() {
     let (env, _issuer, reserve_account, verifier, sac_address, _admin) = setup_test_env();
 
-    let contract_id = env.register_contract(None, SolvencyPolicy);
+    let contract_id = env.register(SolvencyPolicy, ());
     let client = SolvencyPolicyClient::new(&env, &contract_id);
 
     let mut reserve_accounts = Vec::new(&env);
@@ -231,11 +223,11 @@ fn test_attest_stale_proof() {
         freshness_window: 10, // Ventana pequeña
     };
 
-    client.__constructor(&config);
+    client.initialize(&config);
 
     env.ledger().set(LedgerInfo {
         timestamp: 1000000,
-        protocol_version: 20,
+        protocol_version: 22,
         sequence_number: 100,
         network_id: Default::default(),
         base_reserve: 10,
@@ -277,7 +269,7 @@ fn test_attest_stale_proof() {
 fn test_attest_replay() {
     let (env, _issuer, reserve_account, verifier, sac_address, _admin) = setup_test_env();
 
-    let contract_id = env.register_contract(None, SolvencyPolicy);
+    let contract_id = env.register(SolvencyPolicy, ());
     let client = SolvencyPolicyClient::new(&env, &contract_id);
 
     let mut reserve_accounts = Vec::new(&env);
@@ -290,11 +282,11 @@ fn test_attest_replay() {
         freshness_window: 100,
     };
 
-    client.__constructor(&config);
+    client.initialize(&config);
 
     env.ledger().set(LedgerInfo {
         timestamp: 1000000,
-        protocol_version: 20,
+        protocol_version: 22,
         sequence_number: 100,
         network_id: Default::default(),
         base_reserve: 10,
