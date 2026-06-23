@@ -7,13 +7,14 @@ Sistema de proof of solvency privado para emisores de stablecoins y RWA en Stell
 ## 🚀 Estado del Proyecto: 90% Completo
 
 ✅ **Circuito Noir compilado** (29KB, Pedersen hash, 8 holders)
-✅ **ZK Proving real activado** (Noir + Barretenberg en navegador)
+✅ **ZK Proving real activado** (UltraHonkBackend - compatible con verifier)
 ✅ **Contratos Soroban desplegados en testnet** (6/6 tests passing)
 ✅ **Frontend React completo** (Freighter wallet integration)
 ✅ **Sistema end-to-end funcional** (MOCK verifier mode)
-⏳ **UltraHonk Verifier deployment** (bloqueado por incompatibilidad de herramientas)
+✅ **Backend compatibility fix** (UltraPlonk → UltraHonk)
+⏳ **UltraHonk Verifier deployment** (bloqueado por herramientas de infraestructura)
 
-**Estado actual:** El sistema genera pruebas ZK reales y funciona completamente en modo MOCK. El 10% restante es deployment del verifier, bloqueado por problemas de infraestructura (bb CLI installation, Rust version). Ver [COMPLETION_STATUS.md](./COMPLETION_STATUS.md) para detalles completos.
+**Estado actual:** El sistema genera pruebas ZK reales en formato UltraHonk (compatible con Nethermind verifier). El 10% restante es deployment del verifier, bloqueado por problemas de infraestructura (bb CLI installation, Rust version). Ver [BACKEND_COMPATIBILITY_FIX.md](./BACKEND_COMPATIBILITY_FIX.md) para detalles del fix.
 
 ### Testnet Deployment
 
@@ -42,12 +43,13 @@ npm run dev
 ## Estado Actual
 
 - **Integración Stellar** (`src/lib/stellar.js`): ✅ Real - `querySolvent` simula `is_solvent` y `attest` firma con Freighter
-- **ZK Proving** (`src/lib/prover.js`): ✅ Real - MOCK = false, genera pruebas ZK reales en navegador
+- **ZK Proving** (`src/lib/prover.js`): ✅ Real - UltraHonkBackend, genera pruebas ZK reales en navegador
 - **Circuito Noir**: ✅ Compilado - `public/solvency.json` (29KB)
 - **Dependencias ZK**: ✅ Instaladas - `@noir-lang/noir_js`, `@aztec/bb.js`
+- **Backend Compatibility**: ✅ Fixed - UltraHonk proofs (compatible con Nethermind verifier)
 - **Verifier Contract**: ✅ Código listo - Deployment bloqueado por herramientas (ver COMPLETION_STATUS.md)
 
-**El sistema funciona end-to-end en modo MOCK.** Todas las pruebas ZK son reales, solo falta deployment del verifier criptográfico.
+**El sistema funciona end-to-end en modo MOCK.** Las pruebas ZK usan formato UltraHonk correcto, solo falta deployment del verifier criptográfico.
 
 ## Arquitectura
 
@@ -102,13 +104,15 @@ veraz-proof-of-solvency/
 1. ✅ Contracts desplegados en testnet
 2. ✅ Circuito Noir compilado (Pedersen, 8 holders)
 3. ✅ Prover real activado en frontend
-4. ✅ Tests end-to-end funcionando (MOCK mode)
-5. ⏳ Deploy UltraHonk verifier (bloqueado - ver COMPLETION_STATUS.md)
-6. ⏳ Actualizar solvency_policy para usar verifier real (código listo)
-7. ⏳ Security audit y preparación para mainnet
+4. ✅ Backend compatibility fix (UltraPlonk → UltraHonk)
+5. ✅ Tests end-to-end funcionando (MOCK mode)
+6. ⏳ Deploy UltraHonk verifier (bloqueado - ver COMPLETION_STATUS.md)
+7. ⏳ Actualizar solvency_policy para usar verifier real (código listo)
+8. ⏳ Security audit y preparación para mainnet
 
 ## Documentación
 
+- [BACKEND_COMPATIBILITY_FIX.md](./BACKEND_COMPATIBILITY_FIX.md) - ⚡ Fix crítico de compatibilidad UltraHonk
 - [COMPLETION_STATUS.md](./COMPLETION_STATUS.md) - Estado actual detallado (90% completo)
 - [STATUS.md](./STATUS.md) - Status técnico y métricas
 - [FINAL_SUMMARY.md](./FINAL_SUMMARY.md) - Resumen ejecutivo del proyecto

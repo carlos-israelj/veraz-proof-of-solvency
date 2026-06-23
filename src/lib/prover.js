@@ -1,14 +1,15 @@
 // Generación de la prueba de solvencia (off-chain, en el navegador).
 //
-// Estado: REAL proving activado
+// Estado: REAL proving activado (UltraHonk backend)
 //   ✅ Circuit compilado: circuits/solvency/target/solvency.json
 //   ✅ Dependencies instaladas: @noir-lang/noir_js @aztec/bb.js
 //   ✅ Circuit en /public/solvency.json
+//   ✅ Backend: UltraHonkBackend (compatible con Nethermind verifier)
 
 const MOCK = false;
 
 import { Noir } from "@noir-lang/noir_js";
-import { BarretenbergBackend } from "@aztec/bb.js";
+import { UltraHonkBackend } from "@aztec/bb.js";
 import circuit from "../../public/solvency.json";
 
 /**
@@ -40,7 +41,7 @@ export async function generateSolvencyProof(inputs) {
     console.log("Generating proof with inputs:", circuitInputs);
 
     const noir = new Noir(circuit);
-    const backend = new BarretenbergBackend(circuit.bytecode);
+    const backend = new UltraHonkBackend(circuit.bytecode);
 
     // Execute circuit to get witness
     const { witness } = await noir.execute(circuitInputs);
