@@ -50,6 +50,7 @@ pub struct Config {
     pub reserve_sac: Address,           // SAC del activo de reserva (ej: USDC)
     pub reserve_accounts: Vec<Address>, // Cuentas de reserva del emisor
     pub freshness_window: u32,          // Máx. antigüedad en ledgers
+    pub aquarius_pools: Vec<Address>,   // OPTIONAL: Aquarius AMM pool addresses (can be empty)
 }
 
 #[contracttype]
@@ -137,9 +138,24 @@ impl SolvencyPolicy {
         let token = TokenClient::new(&env, &cfg.reserve_sac);
         let mut reserves: i128 = 0;
 
+        // 4a. Read reserves from regular accounts
         for acct in cfg.reserve_accounts.iter() {
             let balance = token.balance(&acct);
             reserves = reserves.checked_add(balance).ok_or(Error::Overflow)?;
+        }
+
+        // 4b. OPTIONAL: Read reserves from Aquarius AMM pools
+        // If aquarius_pools is empty, this is skipped (no overhead)
+        // Pool shares are queried for each reserve account (same accounts that hold direct reserves)
+        if !cfg.aquarius_pools.is_empty() {
+            for acct in cfg.reserve_accounts.iter() {
+                let aquarius_reserves = aquarius::read_aquarius_reserves(
+                    &env,
+                    &cfg.aquarius_pools,
+                    &acct,
+                )?;
+                reserves = reserves.checked_add(aquarius_reserves).ok_or(Error::Overflow)?;
+            }
         }
 
         // 5. Solvencia: R ≥ L
@@ -232,5 +248,11 @@ impl SolvencyPolicy {
     }
 }
 
+mod aquarius;
+
+#[cfg(test)]
+mod mock_verifier;
+#[cfg(test)]
+mod mock_pool;
 #[cfg(test)]
 mod test;

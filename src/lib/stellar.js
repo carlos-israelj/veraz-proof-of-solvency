@@ -17,7 +17,16 @@ const READONLY_SOURCE =
   "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF5";
 
 function bytesToScVal(bytes) {
-  return StellarSdk.xdr.ScVal.scvBytes(Buffer.from(bytes));
+  // Ensure bytes is a Uint8Array
+  if (!(bytes instanceof Uint8Array)) {
+    throw new Error(`bytesToScVal expects Uint8Array, got ${typeof bytes}`);
+  }
+
+  console.log("Converting bytes to ScVal, length:", bytes.length);
+  console.log("First 32 bytes:", Array.from(bytes.slice(0, 32)).map(b => b.toString(16).padStart(2, '0')).join(''));
+
+  // Stellar SDK accepts Uint8Array directly, no need for Buffer
+  return StellarSdk.xdr.ScVal.scvBytes(bytes);
 }
 
 // Lectura del badge público: simula `is_solvent` y devuelve la atestación nativa.

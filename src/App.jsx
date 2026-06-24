@@ -72,10 +72,10 @@ function Emisor() {
     try {
       const bals = balances.split(/[\s,]+/).filter(Boolean);
       const salts = bals.map((_, i) => String(i + 1));
-      const totalLiabilities = bals.reduce((a, b) => a + BigInt(b), 0n).toString();
       const { publicInputs, proof } = await generateSolvencyProof({
-        balances: bals, salts, ledgerSeq: Number(ledgerSeq) || 0,
-        root: "0x0", totalLiabilities,
+        balances: bals,
+        salts,
+        ledgerSeq: Number(ledgerSeq) || 0,
       });
       setStatus("Atestando on-chain…");
       const { hash } = await attest({
