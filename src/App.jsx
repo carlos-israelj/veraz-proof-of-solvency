@@ -3,7 +3,7 @@ import { isConnected, setAllowed, getAddress } from "@stellar/freighter-api";
 import { querySolvent, attest, getCurrentLedgerSeq } from "./lib/stellar.js";
 
 const DEFAULT_CONTRACT = "CBONF5V5BZDHNVYRB5YEW2W2OQ7GNIS4M3CVQMUTMWACZFGD6RVY636U";
-const N = 8; // holders que soporta el circuito
+const N = 8; // Holders que soporta el circuito
 
 // ── Utilidades ─────────────────────────────────────────────────────────
 function toHex(bytes) {
@@ -19,217 +19,191 @@ function timeAgo(unixTs) {
   return `hace ${Math.floor(min / 60)}h ${min % 60}min`;
 }
 
-// ── Componente: Badge de solvencia ─────────────────────────────────────
-function Badge({ att, loading }) {
-  if (loading) {
-    return (
-      <div className="badge-loading">
-        <span className="spinner" /> Consultando la red...
-      </div>
-    );
-  }
-  if (!att) {
-    return (
-      <div className="badge-empty">
-        <span className="badge-icon">🔍</span>
-        <p>Este contrato aún no tiene atestación publicada.</p>
-      </div>
-    );
-  }
+// ── Componente: Certificado de Solvencia (Auditor) ──────────────────────
+function SolvencyCertificate({ att }) {
+  if (!att) return null;
+  const isSolvent = att.solvent;
+
   return (
-    <div className="badge-card">
-      <div className="badge-status">
-        <span className={att.solvent ? "pill ok" : "pill bad"}>
-          {att.solvent ? "✅ Solvente" : "❌ Insolvente"}
-        </span>
-        <span className="badge-age">{timeAgo(att.timestamp)}</span>
+    <div className="glass-panel certificate-card">
+      <div className={`cert-header ${isSolvent ? "" : "insolvent"}`}>
+        <div className="cert-icon">{isSolvent ? "🛡️" : "⚠️"}</div>
+        <h2 style={{ color: isSolvent ? "var(--brand-emerald)" : "var(--brand-red)" }}>
+          {isSolvent ? "Certificado de Solvencia" : "Alerta de Insolvencia"}
+        </h2>
+        <p className="muted" style={{ marginTop: "0.5rem" }}>
+          Verificado criptográficamente en la red Soroban
+        </p>
       </div>
-      <dl className="kv">
-        <dt>Reservas verificadas (on-chain)</dt>
-        <dd className="num">{Number(att.reserves).toLocaleString()}</dd>
-        <dt>Pasivos (L)</dt>
-        <dd className="private">🔒 Ocultos — probado L ≤ R</dd>
-        <dt>Snapshot</dt>
-        <dd className="num">Ledger #{String(att.ledger_seq)}</dd>
-      </dl>
+      
+      <div className="cert-body">
+        <dl className="cert-kv">
+          <div className="cert-kv-item">
+            <dt>Reservas On-Chain (XLM)</dt>
+            <dd>{Number(att.reserves).toLocaleString()}</dd>
+          </div>
+          <div className="cert-kv-item">
+            <dt>Pasivos Probados (ZK Proof)</dt>
+            <dd style={{ color: "var(--brand-cyan)" }}>
+              🔒 Verificado: Pasivos ≤ Reservas
+            </dd>
+          </div>
+          <div className="cert-kv-item">
+            <dt>Auditoría (Ledger Seq)</dt>
+            <dd className="mono">#{String(att.ledger_seq)} <span className="muted text-sm">({timeAgo(att.timestamp)})</span></dd>
+          </div>
+        </dl>
+        
+        <details className="crypto-details">
+          <summary>Ver Detalles Criptográficos</summary>
+          <pre className="crypto-pre">
+            Contrato Verifier: ZK UltraHonk{`\n`}
+            Snapshot Timestamp: {new Date(Number(att.timestamp) * 1000).toISOString()}{`\n`}
+            Reservas crudas: {att.reserves.toString()}
+          </pre>
+        </details>
+      </div>
     </div>
   );
 }
 
-// ── Tab: Público ────────────────────────────────────────────────────────
-function Publico() {
+// ── Vista: Auditor Journey ──────────────────────────────────────────────
+function AuditorJourney({ onBack }) {
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT);
   const [att, setAtt] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const verificar = useCallback(async (id) => {
+  const verificar = async () => {
+    if (!contractId) return;
     setLoading(true);
-    setStatus("");
+    setError("");
     setAtt(null);
     try {
-      const r = await querySolvent(id.trim());
-      setAtt(r);
-      if (!r) setStatus("Este contrato aún no tiene atestación.");
+      const r = await querySolvent(contractId.trim());
+      if (r) {
+        setAtt(r);
+      } else {
+        setError("Este contrato aún no tiene una atestación ZK publicada.");
+      }
     } catch (e) {
-      setStatus(e.message);
+      setError(e.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  // Auto-consultar al cargar
-  useEffect(() => { verificar(DEFAULT_CONTRACT); }, [verificar]);
+  // Auto-verificar si hay un contrato por defecto
+  useEffect(() => { verificar(); }, []);
 
   return (
     <section>
-      <p className="lead">
-        Verifica criptográficamente si un emisor tiene reservas suficientes para cubrir sus pasivos.
-      </p>
+      <div className="view-header">
+        <button className="btn-back" onClick={onBack}>← Volver</button>
+      </div>
+      
+      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <h2>Auditoría Criptográfica</h2>
+        <p className="muted">Verifica matemáticamente que un emisor no opera con reserva fraccionaria.</p>
+      </div>
 
-      <Badge att={att} loading={loading} />
+      <div className="search-container">
+        <input
+          className="search-input"
+          value={contractId}
+          onChange={e => setContractId(e.target.value)}
+          placeholder="Ingresa el Contract ID del Emisor..."
+        />
+        <button className="btn-primary" onClick={verificar} disabled={loading || !contractId}>
+          {loading ? "Buscando..." : "Auditar"}
+        </button>
+      </div>
 
-      {status && <p className="status-msg error">{status}</p>}
-
-      <button className="link-btn" onClick={() => setShowAdvanced(v => !v)}>
-        {showAdvanced ? "▲ Ocultar" : "▼ Consultar otro emisor"}
-      </button>
-
-      {showAdvanced && (
-        <div className="advanced-box">
-          <label>Contract ID del emisor
-            <div className="row">
-              <input
-                value={contractId}
-                onChange={e => setContractId(e.target.value)}
-                placeholder="C…"
-              />
-              <button onClick={() => verificar(contractId)} disabled={!contractId}>
-                Verificar
-              </button>
-            </div>
-          </label>
+      {error && <div className="alert error">{error}</div>}
+      
+      {loading && !error && (
+        <div style={{ textAlign: "center", color: "var(--brand-cyan)", marginTop: "2rem" }}>
+          <span className="spinner" style={{ borderColor: "var(--border-subtle)", borderTopColor: "var(--brand-cyan)" }} /> Analizando red...
         </div>
       )}
+
+      {!loading && att && <SolvencyCertificate att={att} />}
     </section>
   );
 }
 
-// ── Componentes de progreso ─────────────────────────────────────────────
-const STEPS = [
-  "Calcular Merkle tree",
-  "Generar prueba ZK (10–30s)",
-  "Firmar en Freighter",
-  "Confirmado ✓",
-];
+// ── Loader ZK Interactivo ───────────────────────────────────────────────
+function ZKLoader({ stepIndex }) {
+  const messages = [
+    "Descargando circuito WASM...",
+    "Construyendo Árbol de Merkle con saldos ocultos...",
+    "Generando Prueba ZK (UltraHonk) - Puede tomar 10~30s...",
+    "Alistando transacción para enviar a Soroban..."
+  ];
 
-function StepList({ current }) {
-  if (current < 0) return null;
+  const currentMsg = messages[Math.min(stepIndex, messages.length - 1)];
+
   return (
-    <div className="steps">
-      {STEPS.map((label, i) => {
-        const cls = i < current ? "done" : i === current ? "active" : "";
-        return (
-          <div key={i} className={`step-item ${cls}`}>
-            <span className="step-dot">{i < current ? "✓" : i + 1}</span>
-            <span>{label}</span>
-          </div>
-        );
-      })}
+    <div className="glass-panel zk-loader">
+      <div className="scanner-box">
+        <div className="scanner-line"></div>
+      </div>
+      <h4>Computación ZK en Progreso</h4>
+      <p>{currentMsg}</p>
     </div>
   );
 }
 
-function ProgressBar({ active, value }) {
-  if (!active) return null;
-  return (
-    <div className="progress-wrap">
-      <div className="progress-bar" style={{ width: `${value}%` }} />
-    </div>
-  );
-}
-
-// ── Tab: Emisor ─────────────────────────────────────────────────────────
-function Emisor() {
+// ── Vista: Issuer Wizard (Emisor) ───────────────────────────────────────
+function IssuerWizard({ onBack }) {
   const [address, setAddress] = useState(null);
-  const [balances, setBalances] = useState(
-    "100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000"
-  );
-  const [status, setStatus] = useState("");
-  const [step, setStep] = useState(-1);
-  const [txHash, setTxHash] = useState(null);
-  const [debugInfo, setDebugInfo] = useState(null);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [balances, setBalances] = useState("100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000");
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT);
+  
+  // Estado del Wizard: 0 = Wallet, 1 = Inputs, 2 = Generating, 3 = Done
+  const [step, setStep] = useState(0);
+  const [zkProgress, setZkProgress] = useState(0);
+  const [txHash, setTxHash] = useState(null);
+  const [error, setError] = useState("");
 
-  // Parsear balances en tiempo real
   const balList = balances.split(/[\s,]+/).filter(Boolean);
   const count = balList.length;
-  const walletReady = !!address;
-  const balancesReady = count === N;
-  const allReady = walletReady && balancesReady && contractId;
-
-  // Porcentaje para la barra de progreso
-  const progressPct = step < 0 ? 0 : Math.round(((step + 1) / STEPS.length) * 100);
 
   async function conectar() {
     try {
       if (!(await isConnected())) {
-        setStatus("⚠️ Instala la extensión Freighter en tu navegador.");
+        setError("Instala la extensión Freighter en tu navegador.");
         return;
       }
       await setAllowed();
       const { address: addr } = await getAddress();
       setAddress(addr);
-      setStatus("");
+      setError("");
+      setStep(1); // Mover al siguiente paso
     } catch (e) {
-      setStatus(`Error conectando wallet: ${e.message}`);
+      setError(`Error conectando wallet: ${e.message}`);
     }
   }
 
-  async function atestar() {
-    setTxHash(null);
-    setDebugInfo(null);
-    setStatus("Iniciando...");
-    setStep(0);
+  async function generarPrueba() {
+    setError("");
+    setStep(2); // Entra a modo de carga
+    setZkProgress(0);
 
     try {
-      // Import lazy para no cargar WASM al arrancar la app
+      setZkProgress(1); // Merkle tree
       const { generateSolvencyProof } = await import("./lib/prover.js");
-
       const salts = balList.map((_, i) => String(i + 1));
       const ledgerSeq = await getCurrentLedgerSeq();
 
-      setStatus("Calculando árbol de compromisos Merkle...");
-      // step 0 ya está activo, la generación del tree ocurre dentro del prover
-
-      setStep(1);
-      setStatus("Generando prueba ZK (esto puede tardar 10–30 segundos)…");
-
+      setZkProgress(2); // Proving
       const { proof, publicInputs } = await generateSolvencyProof({
         balances: balList,
         salts,
         ledgerSeq,
       });
 
-      // Guardar info de debug
-      setDebugInfo({
-        proof_bytes: proof.length,
-        public_inputs_bytes: publicInputs.length,
-        ledger_seq: ledgerSeq,
-        total_liabilities: balList.reduce((a, b) => a + BigInt(b), 0n).toString(),
-        balances_count: balList.length,
-        pi_hex: {
-          root: toHex(publicInputs.slice(0, 32)),
-          L_field: toHex(publicInputs.slice(32, 64)),
-          seq_field: toHex(publicInputs.slice(64, 96)),
-        },
-      });
-
-      setStep(2);
-      setStatus("Firma la transacción en Freighter...");
-
+      setZkProgress(3); // Signing
       const { hash } = await attest({
         contractId: contractId.trim(),
         publicInputs,
@@ -237,185 +211,151 @@ function Emisor() {
         sourceAddress: address,
       });
 
-      setStep(3);
       setTxHash(hash);
-      setStatus("");
+      setStep(3); // Hecho
     } catch (e) {
-      setStatus(e.message);
-      setStep(-1);
+      setError(e.message);
+      setStep(1); // Regresar al formulario
     }
   }
 
   return (
     <section>
-      <p className="lead">
-        Genera la prueba criptográfica que demuestra tu solvencia sin revelar los saldos individuales.
-      </p>
-
-      {/* ── Paso 1: Wallet ─────────────────────────────────────────── */}
-      <div className="form-step">
-        <div className={`step-num ${walletReady ? "done" : ""}`}>
-          {walletReady ? "✓" : "1"}
-        </div>
-        <div className="step-content">
-          <h3>Conectar wallet</h3>
-          {walletReady ? (
-            <span className="pill ok small">
-              {address.slice(0, 5)}…{address.slice(-5)}
-            </span>
-          ) : (
-            <button className="primary" onClick={conectar}>
-              Conectar Freighter
-            </button>
-          )}
-        </div>
+      <div className="view-header">
+        <button className="btn-back" onClick={onBack}>← Volver</button>
       </div>
 
-      {/* ── Paso 2: Pasivos ────────────────────────────────────────── */}
-      <div className="form-step">
-        <div className={`step-num ${balancesReady ? "done" : ""}`}>
-          {balancesReady ? "✓" : "2"}
-        </div>
-        <div className="step-content">
-          <h3>
-            Pasivos de tus tenedores{" "}
-            <span className={`counter ${count === N ? "ok" : count > N ? "bad" : ""}`}>
-              {count}/{N}
-            </span>
-          </h3>
-          <p className="step-desc">
-            Ingresa los saldos de tus {N} tenedores. Estos datos son <strong>privados</strong> —
-            la prueba ZK demuestra que la suma ≤ reservas sin revelar ningún valor individual.
-          </p>
-          <textarea
-            rows={3}
-            value={balances}
-            onChange={e => setBalances(e.target.value)}
-            placeholder={`${N} valores separados por coma:\n100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000`}
-          />
-          {count > 0 && count !== N && (
-            <small className="muted warn">
-              {count < N
-                ? `⚠️ Faltan ${N - count} valor${N - count > 1 ? "es" : ""}`
-                : `⚠️ Sobran ${count - N} valor${count - N > 1 ? "es" : ""} — el circuito acepta exactamente ${N}`}
-            </small>
-          )}
-        </div>
+      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <h2>Emisión de Solvencia</h2>
+        <p className="muted">Genera una prueba ZK de tus pasivos sin revelar la identidad ni los montos de tus clientes.</p>
       </div>
 
-      {/* ── Paso 3: Generar y publicar ─────────────────────────────── */}
-      <div className="form-step">
-        <div className="step-num">3</div>
-        <div className="step-content">
-          <h3>Generar y publicar on-chain</h3>
-          <p className="step-desc">
-            El sistema generará la prueba ZK y la enviará al contrato Soroban.
-            Necesitarás firmar una transacción en Freighter.
-          </p>
-          <button
-            className="primary big"
-            onClick={atestar}
-            disabled={!allReady || step >= 0}
-          >
-            {!walletReady
-              ? "Conecta tu wallet primero"
-              : !balancesReady
-              ? `Necesitas exactamente ${N} balances`
-              : step >= 0 && step < 3
-              ? "Generando prueba..."
-              : "Generar prueba y publicar →"}
-          </button>
-        </div>
-      </div>
+      {error && <div className="alert error" style={{ marginBottom: "1.5rem" }}>{error}</div>}
 
-      {/* ── Progreso ───────────────────────────────────────────────── */}
-      <ProgressBar active={step >= 0 && step < 3} value={progressPct} />
-      <StepList current={step} />
+      <div className="wizard-container">
+        {/* Step 1: Wallet */}
+        {step < 2 && (
+          <div className={`glass-panel wizard-step ${step === 0 ? "active" : step > 0 ? "completed" : ""}`}>
+            <div className="wizard-step-header">
+              <div className="step-circle">{step > 0 ? "✓" : "1"}</div>
+              <h3>Conectar Identidad</h3>
+            </div>
+            {step === 0 ? (
+              <button className="btn-primary" onClick={conectar}>Conectar Freighter</button>
+            ) : (
+              <p className="mono text-sm text-gradient">{address}</p>
+            )}
+          </div>
+        )}
 
-      {/* ── Status ─────────────────────────────────────────────────── */}
-      {status && (
-        <p className={`status-msg ${status.startsWith("⚠️") || status.startsWith("❌") || status.includes("Error") ? "error" : ""}`}>
-          {status}
-        </p>
-      )}
-
-      {/* ── Éxito ──────────────────────────────────────────────────── */}
-      {txHash && (
-        <div className="card tx-card">
-          <p className="tx-title">✅ Atestación publicada en Stellar testnet</p>
-          <a
-            href={`https://stellar.expert/explorer/testnet/tx/${txHash}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Ver transacción en Stellar Expert ↗
-          </a>
-          <code className="tx-hash">{txHash}</code>
-        </div>
-      )}
-
-      {/* ── Configuración avanzada ─────────────────────────────────── */}
-      <button className="link-btn" onClick={() => setShowAdvanced(v => !v)}>
-        {showAdvanced ? "▲ Ocultar configuración avanzada" : "▼ Configuración avanzada"}
-      </button>
-
-      {showAdvanced && (
-        <div className="advanced-box">
-          <label>
-            Contract ID (Solvency Policy)
-            <input
-              value={contractId}
-              onChange={e => setContractId(e.target.value)}
-              placeholder="C…"
+        {/* Step 2: Inputs */}
+        {step === 1 && (
+          <div className="glass-panel wizard-step active">
+            <div className="wizard-step-header">
+              <div className="step-circle">2</div>
+              <h3>Ingresar Pasivos Privados</h3>
+            </div>
+            <p className="text-sm muted" style={{ marginBottom: "1rem" }}>
+              Ingresa los saldos de los clientes. El circuito criptográfico ocultará esta información permanentemente.
+            </p>
+            <textarea
+              className="textarea-premium"
+              value={balances}
+              onChange={e => setBalances(e.target.value)}
+              placeholder="10000, 20000, ..."
             />
-          </label>
+            <div className="counters">
+              <div className={`counter-pill ${count === N ? "ok" : "err"}`}>
+                {count}/{N} Inputs Requeridos
+              </div>
+            </div>
+            <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem", flexDirection: "column" }}>
+              <input 
+                className="search-input" 
+                style={{ padding: "0.75rem", fontSize: "0.85rem" }}
+                value={contractId} 
+                onChange={e => setContractId(e.target.value)} 
+                placeholder="Contract ID de Destino" 
+              />
+              <button 
+                className="btn-primary" 
+                onClick={generarPrueba}
+                disabled={count !== N || !contractId}
+              >
+                Generar Prueba Criptográfica →
+              </button>
+            </div>
+          </div>
+        )}
 
-          {debugInfo && (
-            <details className="debug-panel">
-              <summary>🔍 Debug: public inputs & proof</summary>
-              <pre className="debug-pre">{JSON.stringify(debugInfo, null, 2)}</pre>
-            </details>
-          )}
-        </div>
-      )}
+        {/* Step 3: Generación ZK */}
+        {step === 2 && <ZKLoader stepIndex={zkProgress} />}
+
+        {/* Step 4: Éxito */}
+        {step === 3 && txHash && (
+          <div className="glass-panel certificate-card" style={{ marginTop: 0 }}>
+            <div className="cert-header">
+              <div className="cert-icon">🚀</div>
+              <h2 style={{ color: "var(--brand-emerald)" }}>Prueba Aceptada</h2>
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                La red de Soroban ha verificado y aceptado tu prueba de solvencia.
+              </p>
+            </div>
+            <div className="cert-body" style={{ textAlign: "center" }}>
+              <p className="text-sm muted" style={{ marginBottom: "1rem" }}>Hash de la transacción:</p>
+              <a 
+                href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} 
+                target="_blank" 
+                rel="noreferrer"
+                className="mono text-sm"
+                style={{ color: "var(--brand-cyan)", textDecoration: "none", wordBreak: "break-all" }}
+              >
+                {txHash} ↗
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
 
 // ── App root ────────────────────────────────────────────────────────────
 export default function App() {
-  const [tab, setTab] = useState("publico");
+  const [view, setView] = useState("landing"); // 'landing', 'auditor', 'issuer'
+
   return (
     <main>
       <header>
-        <h1>Veraz</h1>
-        <p className="tag">Proof of solvency privado · Stellar · UltraHonk ZK</p>
+        <h1 className="text-gradient">Veraz</h1>
+        <p className="tag">Auditoría criptográfica con Zero-Knowledge en Stellar</p>
       </header>
-      <nav className="tabs">
-        <button
-          className={tab === "publico" ? "on" : ""}
-          onClick={() => setTab("publico")}
-        >
-          🔍 Verificar solvencia
-        </button>
-        <button
-          className={tab === "emisor" ? "on" : ""}
-          onClick={() => setTab("emisor")}
-        >
-          🔐 Publicar prueba
-        </button>
-      </nav>
-      {tab === "publico" ? <Publico /> : <Emisor />}
-      <footer>
-        Verificado por contrato Soroban ·{" "}
-        <a
-          href={`https://stellar.expert/explorer/testnet/contract/${DEFAULT_CONTRACT}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Ver contrato ↗
-        </a>
-      </footer>
+
+      {view === "landing" && (
+        <div className="journey-grid">
+          <div className="glass-panel glass-panel-interactive journey-card" onClick={() => setView("auditor")}>
+            <div className="journey-icon">🔍</div>
+            <h2>Auditar Exchange</h2>
+            <p>Verifica matemáticamente que las reservas cubren todos los pasivos sin comprometer privacidad.</p>
+          </div>
+
+          <div className="glass-panel glass-panel-interactive journey-card" onClick={() => setView("issuer")}>
+            <div className="journey-icon">🔐</div>
+            <h2>Probar Solvencia</h2>
+            <p>Genera una prueba criptográfica local que asegura a tus clientes que sus fondos están íntegros.</p>
+          </div>
+        </div>
+      )}
+
+      {view === "auditor" && <AuditorJourney onBack={() => setView("landing")} />}
+      
+      {view === "issuer" && <IssuerWizard onBack={() => setView("landing")} />}
+
+      {view === "landing" && (
+        <footer>
+          Diseñado con tecnología Noir & Soroban
+        </footer>
+      )}
     </main>
   );
 }
