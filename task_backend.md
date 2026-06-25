@@ -25,10 +25,22 @@ La causa probable es que la versión global de `nargo` o el binario `bb` utiliza
 
 Para completar el flujo E2E, el desarrollador backend debe encargarse de lo siguiente:
 
-- [ ] **Estandarizar Versiones:** Asegurarse de usar Noir `1.0.0-beta.9` y `nargo` (compatible con `bb 0.65.0` o la versión que corresponde a la etiqueta beta.9) para todo el flujo.
-- [ ] **Recompilar el Verifier:** Ejecutar `nargo codegen-verifier` para generar el código actualizado del contrato en Soroban utilizando el **mismo** circuito que está en `src/solvency.json`.
-- [ ] **Redesplegar el Verifier:** Desplegar el nuevo contrato Verificador a Testnet.
-- [ ] **Actualizar la Configuración:** Modificar o reinstanciar el contrato principal `SolvencyPolicy` para que utilice el nuevo ID del Verifier.
-- [ ] *(Recomendado)* **Manejo de Errores Cruzados:** En el contrato `SolvencyPolicy`, capturar explícitamente el fallo del cross-contract invocation (`invoke_contract`) para que devuelva `Error::InvalidProof (3)` en lugar de dejar que el `Error 4` del Verifier se filtre directo al cliente y se confunda con el código `Error::StaleProof (4)`.
+- [x] **Estandarizar Versiones:** ✅ Verificado Noir `1.0.0-beta.9` y bb `0.87.0` instalados correctamente
+- [x] **Regenerar VK:** ✅ Ejecutado `bb write_vk` con bb 0.87.0 para el circuito solvency
+- [x] **Redesplegar el Verifier:** ✅ Desplegado nuevo contrato a Testnet: `CB4QLDEITCZKTXSVBDP7YFT5DFLU35DV5OZCCSAZFYEEWEEBS7CIWPGM`
+- [x] **Actualizar la Configuración:** ✅ Desplegado nuevo SolvencyPolicy: `CBUGYVTOHYNXI7MOLPSQCPZRAF6NSRHIVOROZQVAB23DJVYIUE6REJK7` con nuevo verifier ID
+- [x] **Manejo de Errores Mejorado:** ✅ Reorganizados códigos de error para evitar colisiones (StaleProof ahora es Error 10, VerificationFailed del verifier es Error 4)
 
-Una vez que la Llave de Verificación en cadena coincida matemáticamente con las pruebas generadas por el cliente, el sistema de comprobación ZK funcionará correctamente de principio a fin.
+## 5. ✅ Resolución Completada (25 de junio, 2026)
+
+**Estado**: RESUELTO - Sistema E2E Funcional
+
+La Llave de Verificación en cadena ahora coincide matemáticamente con las pruebas generadas por el cliente. El sistema de comprobación ZK funciona correctamente de principio a fin.
+
+**Componentes Actualizados**:
+- Nuevo Verifier: `CB4QLDEITCZKTXSVBDP7YFT5DFLU35DV5OZCCSAZFYEEWEEBS7CIWPGM`
+- Nuevo SolvencyPolicy: `CBUGYVTOHYNXI7MOLPSQCPZRAF6NSRHIVOROZQVAB23DJVYIUE6REJK7`
+- Frontend actualizado con nuevo contract ID
+- VK regenerada con bb 0.87.0 (compatible con frontend)
+
+Ver **BACKEND_RESOLUTION.md** para documentación completa de la resolución.

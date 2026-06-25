@@ -27,12 +27,13 @@ contractmeta!(
 pub enum Error {
     AlreadyInitialized = 1,
     NotInitialized = 2,
-    InvalidProof = 3,
-    StaleProof = 4,      // ledger_seq fuera de la ventana de frescura
-    Replay = 5,          // ledger_seq <= último verificado
-    Insolvent = 6,       // R < L
-    BadPublicInputs = 7,
-    Overflow = 8,
+    BadPublicInputs = 3,
+    StaleProof = 10,     // ledger_seq fuera de la ventana de frescura
+    Replay = 11,         // ledger_seq <= último verificado
+    Insolvent = 12,      // R < L
+    Overflow = 13,
+    // Nota: Los errores 3-9 están reservados para el Verifier (rs-soroban-ultrahonk)
+    // El verifier usa Error 4 = VerificationFailed, que se propagará si la prueba es inválida
 }
 
 #[contracttype]
@@ -127,7 +128,8 @@ impl SolvencyPolicy {
         }
 
         // 3. Verificación criptográfica (cross-contract a Capa 1)
-        // Verifier deployado en testnet: CAU5ZPZSJSASGEDMKPBQHL26AFEMH3DQWWTG52Y77L5NWWSECBHJAFKA
+        // Si el verifier falla, Soroban propagará su error (Error 4 = VerificationFailed).
+        // Los códigos de error de SolvencyPolicy están en el rango 10+ para evitar colisiones.
         env.invoke_contract::<()>(
             &cfg.verifier,
             &Symbol::new(&env, "verify_proof"),
