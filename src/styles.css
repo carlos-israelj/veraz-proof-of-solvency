@@ -520,3 +520,65 @@ footer a:hover { color: var(--text-primary); text-decoration: underline; }
   background: rgba(239, 68, 68, 0.2);
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
 }
+
+/* ── Driver.js Theme (Tour) ────────────────────────────────────────── */
+.driver-premium-theme {
+  background: rgba(17, 25, 40, 0.95) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 16px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--brand-cyan-glow) !important;
+  padding: 1.5rem !important;
+}
+.driver-premium-theme .driver-popover-title {
+  font-family: var(--font-sans) !important;
+  font-size: 1.15rem !important;
+  font-weight: 700 !important;
+  color: var(--brand-cyan) !important;
+  margin-bottom: 0.5rem !important;
+}
+.driver-premium-theme .driver-popover-description {
+  color: var(--text-secondary) !important;
+  font-size: 0.9rem !important;
+  line-height: 1.5 !important;
+}
+.driver-premium-theme .driver-popover-footer button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 8px !important;
+  text-shadow: none !important;
+  font-weight: 500 !important;
+  transition: all 0.2s !important;
+}
+.driver-premium-theme .driver-popover-footer button:hover {
+  background: var(--brand-cyan-glow) !important;
+  border-color: var(--brand-cyan) !important;
+}
+.driver-premium-theme .driver-popover-arrow {
+  border-color: rgba(17, 25, 40, 0.95) !important;
+}
+
+/* Float Help Button */
+.float-help-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--brand-stellar);
+  color: #000;
+  font-size: 1.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--brand-stellar-glow);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+}
+.float-help-btn:hover {
+  transform: scale(1.1) translateY(-4px);
+  box-shadow: 0 8px 30px rgba(244, 196, 48, 0.4);
+}

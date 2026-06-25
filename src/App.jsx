@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { isConnected, setAllowed, getAddress } from "@stellar/freighter-api";
 import { querySolvent, attest, getCurrentLedgerSeq } from "./lib/stellar.js";
 import { t } from "./locales.js";
+import { startTour } from "./lib/tours.js";
 
 const DEFAULT_CONTRACT = "CBONF5V5BZDHNVYRB5YEW2W2OQ7GNIS4M3CVQMUTMWACZFGD6RVY636U";
 const N = 8; // Holders que soporta el circuito
@@ -127,7 +128,7 @@ function AuditorJourney({ onBack, lang }) {
         <p className="muted">{str.auditorHeaderDesc}</p>
       </div>
 
-      <div className="search-container">
+      <div className="search-container" id="tour-auditor-search">
         <input
           className="search-input"
           value={contractId}
@@ -269,7 +270,7 @@ function IssuerWizard({ onBack, lang }) {
 
       <div className="wizard-container">
         {step < 2 && (
-          <div className={`glass-panel wizard-step ${step === 0 ? "active" : step > 0 ? "completed" : ""}`}>
+          <div className={`glass-panel wizard-step ${step === 0 ? "active" : step > 0 ? "completed" : ""}`} id="tour-issuer-wallet">
             <div className="wizard-step-header">
               <div className="step-circle">{step > 0 ? "✓" : "1"}</div>
               <h3>{str.step1Title}</h3>
@@ -283,7 +284,7 @@ function IssuerWizard({ onBack, lang }) {
         )}
 
         {step === 1 && (
-          <div className="glass-panel wizard-step active">
+          <div className="glass-panel wizard-step active" id="tour-issuer-inputs">
             <div className="wizard-step-header">
               <div className="step-circle">2</div>
               <h3>{str.step2Title}</h3>
@@ -384,13 +385,13 @@ export default function App() {
 
       {view === "landing" && (
         <div className="journey-grid">
-          <div className="glass-panel glass-panel-interactive journey-card" onClick={() => setView("auditor")}>
+          <div className="glass-panel glass-panel-interactive journey-card" id="tour-auditor-btn" onClick={() => setView("auditor")}>
             <div className="journey-icon">🔍</div>
             <h2>{str.auditorCardTitle}</h2>
             <p>{str.auditorCardDesc}</p>
           </div>
 
-          <div className="glass-panel glass-panel-interactive journey-card" onClick={() => setView("issuer")}>
+          <div className="glass-panel glass-panel-interactive journey-card" id="tour-issuer-btn" onClick={() => setView("issuer")}>
             <div className="journey-icon">🔐</div>
             <h2>{str.issuerCardTitle}</h2>
             <p>{str.issuerCardDesc}</p>
@@ -407,6 +408,10 @@ export default function App() {
           {str.footerText}
         </footer>
       )}
+
+      <button className="float-help-btn" onClick={() => startTour(view, lang)} title={str.tourHelpBtn}>
+        💡
+      </button>
     </main>
   );
 }

@@ -62,6 +62,22 @@ export const t = {
     proofAccepted: "Proof Accepted",
     proofAcceptedDesc: "The Soroban network has verified and accepted your proof of solvency.",
     txHashLabel: "Transaction hash:",
+
+    // Tour Strings
+    tourNext: "Next",
+    tourPrev: "Previous",
+    tourDone: "Got it!",
+    tourLandingAuditorTitle: "Audit a Platform",
+    tourLandingAuditorDesc: "Click here if you are a user and want to cryptographically verify that an exchange has the funds to cover its liabilities.",
+    tourLandingIssuerTitle: "Prove Your Solvency",
+    tourLandingIssuerDesc: "Click here if you are an exchange and want to generate a mathematical proof of your reserves without exposing client data.",
+    tourAuditorSearchTitle: "Enter Contract ID",
+    tourAuditorSearchDesc: "Paste the Soroban smart contract ID of the issuer here to verify their cryptographic proof on-chain.",
+    tourIssuerWalletTitle: "Connect Identity",
+    tourIssuerWalletDesc: "First, you must connect your Freighter wallet to sign the transaction that will publish the proof on Soroban.",
+    tourIssuerInputsTitle: "Private Liabilities",
+    tourIssuerInputsDesc: "Enter exactly 8 balances. These will be mathematically hidden (hashed) so no one can see them, but the total sum will be verified against the reserves.",
+    tourHelpBtn: "Interactive Help",
   },
   
   es: {
@@ -127,5 +143,21 @@ export const t = {
     proofAccepted: "Prueba Aceptada",
     proofAcceptedDesc: "La red de Soroban ha verificado y aceptado tu prueba de solvencia.",
     txHashLabel: "Hash de la transacción:",
+
+    // Tour Strings
+    tourNext: "Siguiente",
+    tourPrev: "Anterior",
+    tourDone: "¡Entendido!",
+    tourLandingAuditorTitle: "Audita una Plataforma",
+    tourLandingAuditorDesc: "Haz clic aquí si eres un usuario o entidad que quiere verificar matemáticamente que un exchange tiene reservas suficientes.",
+    tourLandingIssuerTitle: "Prueba tu Solvencia",
+    tourLandingIssuerDesc: "Haz clic aquí si eres un exchange y quieres probar tus reservas de forma pública sin revelar los balances privados de tus clientes.",
+    tourAuditorSearchTitle: "Ingresa el Contract ID",
+    tourAuditorSearchDesc: "Pega aquí el ID del contrato inteligente (Soroban) del exchange para leer y verificar su prueba criptográfica en la red.",
+    tourIssuerWalletTitle: "Conecta tu Identidad",
+    tourIssuerWalletDesc: "Primero necesitas conectar tu billetera de Freighter. Esto servirá para firmar la transacción que publica la prueba ZK en Soroban.",
+    tourIssuerInputsTitle: "Pasivos Privados",
+    tourIssuerInputsDesc: "Ingresa exactamente los 8 saldos. El circuito ZK los ocultará mediante Hashes criptográficos para que nadie pueda leerlos, pero sumará el total para validar la solvencia.",
+    tourHelpBtn: "Ayuda Interactiva",
   }
 };
