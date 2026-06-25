@@ -134,6 +134,7 @@ function AuditorJourney({ onBack, lang }) {
           value={contractId}
           onChange={e => setContractId(e.target.value)}
           placeholder={str.searchPlaceholder}
+          aria-label={str.ariaSearchInput}
         />
         <button className="btn-primary" onClick={verificar} disabled={loading || !contractId}>
           {loading ? str.btnAuditing : str.btnAudit}
@@ -297,6 +298,7 @@ function IssuerWizard({ onBack, lang }) {
               value={balances}
               onChange={e => setBalances(e.target.value)}
               placeholder={str.balancesPlaceholder}
+              aria-label={str.ariaBalancesInput}
             />
             <div className="counters">
               <div className={`counter-pill ${count === N ? "ok" : "err"}`}>
@@ -378,6 +380,7 @@ export default function App() {
           className="btn-secondary" 
           onClick={() => setLang(lang === "es" ? "en" : "es")}
           style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+          aria-label={str.ariaLangToggle}
         >
           {lang === "es" ? "English" : "Español"}
         </button>
@@ -398,17 +401,17 @@ export default function App() {
       {view === "landing" && (
         <>
           <div className="journey-grid">
-            <div className="glass-panel glass-panel-interactive journey-card" id="tour-auditor-btn" onClick={() => setView("auditor")}>
-              <div className="journey-icon">🔍</div>
+            <button className="glass-panel glass-panel-interactive journey-card" id="tour-auditor-btn" onClick={() => setView("auditor")}>
+              <div className="journey-icon" aria-hidden="true">🔍</div>
               <h2>{str.auditorCardTitle}</h2>
               <p>{str.auditorCardDesc}</p>
-            </div>
+            </button>
 
-            <div className="glass-panel glass-panel-interactive journey-card" id="tour-issuer-btn" onClick={() => setView("issuer")}>
-              <div className="journey-icon">🔐</div>
+            <button className="glass-panel glass-panel-interactive journey-card" id="tour-issuer-btn" onClick={() => setView("issuer")}>
+              <div className="journey-icon" aria-hidden="true">🔐</div>
               <h2>{str.issuerCardTitle}</h2>
               <p>{str.issuerCardDesc}</p>
-            </div>
+            </button>
           </div>
 
           <details className="landing-accordion">
@@ -437,8 +440,8 @@ export default function App() {
         </footer>
       )}
 
-      <button className="float-help-btn" onClick={() => startTour(view, lang)} title={str.tourHelpBtn}>
-        💡
+      <button className="float-help-btn" onClick={() => startTour(view, lang)} aria-label={str.ariaHelpBtn} title={str.tourHelpBtn}>
+        <span aria-hidden="true">💡</span>
       </button>
     </main>
     </>

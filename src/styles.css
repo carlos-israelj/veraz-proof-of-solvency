@@ -687,3 +687,22 @@ footer a:hover { color: var(--text-primary); text-decoration: underline; }
   line-height: 1.7;
   white-space: pre-line;
 }
+
+/* ── Accessibility (A11y) & Equitable Design ─────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--brand-cyan) !important;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mouse-glow {
+    display: none !important;
+  }
+}

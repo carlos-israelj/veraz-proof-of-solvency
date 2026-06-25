@@ -85,6 +85,12 @@ export const t = {
     tourIssuerInputsTitle: "Private Liabilities",
     tourIssuerInputsDesc: "Enter exactly 8 balances. These will be mathematically hidden (hashed) so no one can see them, but the total sum will be verified against the reserves.",
     tourHelpBtn: "Interactive Help",
+
+    // Accessibility (A11y) ARIA Labels
+    ariaLangToggle: "Toggle language between English and Spanish",
+    ariaSearchInput: "Search input for the issuer's contract ID",
+    ariaBalancesInput: "Text area to input the 8 client balances separated by commas",
+    ariaHelpBtn: "Start interactive guided tour for this screen"
   },
   
   es: {
@@ -173,5 +179,11 @@ export const t = {
     tourIssuerInputsTitle: "Pasivos Privados",
     tourIssuerInputsDesc: "Ingresa exactamente los 8 saldos. El circuito ZK los ocultará mediante Hashes criptográficos para que nadie pueda leerlos, pero sumará el total para validar la solvencia.",
     tourHelpBtn: "Ayuda Interactiva",
+
+    // Accessibility (A11y) ARIA Labels
+    ariaLangToggle: "Cambiar idioma entre Inglés y Español",
+    ariaSearchInput: "Campo de búsqueda para el ID del contrato inteligente",
+    ariaBalancesInput: "Área de texto para ingresar los 8 balances de clientes separados por comas",
+    ariaHelpBtn: "Iniciar tour interactivo guiado para esta pantalla"
   }
 };
