@@ -9,9 +9,16 @@ export const t = {
     issuerCardDesc: "Generate a local cryptographic proof assuring your clients their funds are intact.",
     footerText: "Designed with Noir & Soroban technology",
     
+    // Landing Info Sections
+    infoAccordionTitle: "Learn More",
+    infoWhyStellarTitle: "Why Stellar?",
+    infoWhyStellarDesc: "Stellar provides incredibly fast and cheap transactions, making it the perfect network for continuous cryptographic audits. The Soroban smart contract platform offers the robustness of Rust and WebAssembly, ideal for handling complex Zero-Knowledge verifications on-chain.",
+    infoHowItWorksTitle: "How it Works",
+    infoHowItWorksDesc: "1. The exchange commits their user balances locally into a Merkle Tree.\n2. UltraHonk generates a Zero-Knowledge proof of solvency locally (no private data ever leaves the browser).\n3. The proof and the Merkle root are sent to the Soroban Verifier contract.\n4. Anyone can query the contract to mathematically verify solvency without trusting third parties.",
+    
     // Shared
     backBtn: "← Go Back",
-    
+
     // Auditor Journey
     auditorHeaderTitle: "Cryptographic Audit",
     auditorHeaderDesc: "Mathematically verify that an issuer is not operating with fractional reserves.",
@@ -90,9 +97,16 @@ export const t = {
     issuerCardDesc: "Genera una prueba criptográfica local que asegura a tus clientes que sus fondos están íntegros.",
     footerText: "Diseñado con tecnología Noir & Soroban",
     
+    // Landing Info Sections
+    infoAccordionTitle: "Aprender Más",
+    infoWhyStellarTitle: "¿Por qué Stellar?",
+    infoWhyStellarDesc: "Stellar provee transacciones increíblemente rápidas y económicas, convirtiéndola en la red perfecta para auditorías criptográficas continuas. Soroban ofrece la robustez de Rust y WebAssembly, ideal para manejar verificaciones Zero-Knowledge on-chain.",
+    infoHowItWorksTitle: "Cómo funciona",
+    infoHowItWorksDesc: "1. El exchange consolida los saldos de sus usuarios en un Árbol de Merkle.\n2. UltraHonk genera una prueba matemática de solvencia localmente (los datos nunca salen de tu PC).\n3. La prueba y la raíz de Merkle se envían al contrato inteligente Verifier en Soroban.\n4. Cualquiera puede auditar matemáticamente el contrato sin confiar en terceros.",
+    
     // Shared
     backBtn: "← Volver",
-    
+
     // Auditor Journey
     auditorHeaderTitle: "Auditoría Criptográfica",
     auditorHeaderDesc: "Verifica matemáticamente que un emisor no opera con reserva fraccionaria.",

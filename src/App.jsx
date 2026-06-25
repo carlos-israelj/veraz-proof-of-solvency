@@ -359,7 +359,19 @@ export default function App() {
   
   const str = t[lang];
 
+  // Mouse Glow Effect
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
+    <>
+    <div className="mouse-glow"></div>
     <main>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
         <button 
@@ -377,26 +389,42 @@ export default function App() {
           alt="Stellar Logo" 
           style={{ width: '48px', height: '48px', marginBottom: '1rem', filter: 'drop-shadow(0 0 10px rgba(244, 196, 48, 0.4))' }} 
         />
-        <h1 className="text-gradient" style={{ background: 'linear-gradient(135deg, var(--brand-stellar), #FFD700)', WebkitBackgroundClip: 'text' }}>
+        <h1 className="text-gradient">
           {str.appTitle}
         </h1>
         <p className="tag">{str.appSubtitle}</p>
       </header>
 
       {view === "landing" && (
-        <div className="journey-grid">
-          <div className="glass-panel glass-panel-interactive journey-card" id="tour-auditor-btn" onClick={() => setView("auditor")}>
-            <div className="journey-icon">🔍</div>
-            <h2>{str.auditorCardTitle}</h2>
-            <p>{str.auditorCardDesc}</p>
+        <>
+          <div className="journey-grid">
+            <div className="glass-panel glass-panel-interactive journey-card" id="tour-auditor-btn" onClick={() => setView("auditor")}>
+              <div className="journey-icon">🔍</div>
+              <h2>{str.auditorCardTitle}</h2>
+              <p>{str.auditorCardDesc}</p>
+            </div>
+
+            <div className="glass-panel glass-panel-interactive journey-card" id="tour-issuer-btn" onClick={() => setView("issuer")}>
+              <div className="journey-icon">🔐</div>
+              <h2>{str.issuerCardTitle}</h2>
+              <p>{str.issuerCardDesc}</p>
+            </div>
           </div>
 
-          <div className="glass-panel glass-panel-interactive journey-card" id="tour-issuer-btn" onClick={() => setView("issuer")}>
-            <div className="journey-icon">🔐</div>
-            <h2>{str.issuerCardTitle}</h2>
-            <p>{str.issuerCardDesc}</p>
-          </div>
-        </div>
+          <details className="landing-accordion">
+            <summary>{str.infoAccordionTitle}</summary>
+            <div className="landing-info-container">
+              <div className="info-card">
+                <h3>{str.infoWhyStellarTitle}</h3>
+                <p>{str.infoWhyStellarDesc}</p>
+              </div>
+              <div className="info-card">
+                <h3>{str.infoHowItWorksTitle}</h3>
+                <p>{str.infoHowItWorksDesc}</p>
+              </div>
+            </div>
+          </details>
+        </>
       )}
 
       {view === "auditor" && <AuditorJourney onBack={() => setView("landing")} lang={lang} />}
@@ -413,5 +441,6 @@ export default function App() {
         💡
       </button>
     </main>
+    </>
   );
 }

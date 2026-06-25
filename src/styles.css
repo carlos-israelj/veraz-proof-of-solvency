@@ -74,10 +74,16 @@ header {
 }
 
 header h1 {
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 5.5rem; /* Aumentado para más imponencia */
+  font-weight: 900;
+  letter-spacing: -0.04em;
   margin-bottom: 0.5rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #FFFFFF 0%, var(--brand-stellar) 50%, #FFD700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 30px rgba(244, 196, 48, 0.5));
 }
 
 header .tag {
@@ -581,4 +587,103 @@ footer a:hover { color: var(--text-primary); text-decoration: underline; }
 .float-help-btn:hover {
   transform: scale(1.1) translateY(-4px);
   box-shadow: 0 8px 30px rgba(244, 196, 48, 0.4);
+}
+
+/* ── Mouse Glow & Grid Texture ─────────────────────────────────────── */
+.mouse-glow {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  /* Grid de puntos estilo cyberpunk/fintech */
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+  background-size: 32px 32px;
+  /* La máscara hace que el grid solo se vea cerca del ratón */
+  -webkit-mask-image: radial-gradient(
+    500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    black 10%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    black 10%,
+    transparent 100%
+  );
+}
+
+.mouse-glow::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(6, 182, 212, 0.05),
+    transparent 50%
+  );
+}
+
+/* ── Landing Info Sections ─────────────────────────────────────────── */
+.landing-accordion {
+  margin-top: 3rem;
+  text-align: center;
+}
+.landing-accordion summary {
+  display: inline-block;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.3s ease;
+  user-select: none;
+}
+.landing-accordion summary:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.landing-accordion summary::marker {
+  content: "ℹ️ ";
+}
+.landing-accordion[open] summary {
+  margin-bottom: 2rem;
+  color: var(--brand-stellar);
+  border-color: var(--brand-stellar-glow);
+}
+
+.landing-info-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  animation: fade-in-up 0.5s ease-out backwards;
+}
+@media (max-width: 768px) {
+  .landing-info-container { grid-template-columns: 1fr; }
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+.info-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.info-card h3 {
+  color: var(--brand-stellar);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+.info-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-line;
 }
