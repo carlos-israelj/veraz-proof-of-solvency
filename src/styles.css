@@ -51,18 +51,22 @@ main {
   padding: 2rem 1.5rem 6rem;
 }
 
-/* ── Typography ────────────────────────────────────────────────────── */
+/* ── Typography & Utils ───────────────────────────────────────────── */
 h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
 
 .text-gradient {
-  background: linear-gradient(135deg, #38BDF8, #818CF8);
+  background: linear-gradient(135deg, #fff, var(--text-muted));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  display: inline-block;
 }
-
-.mono { font-family: var(--font-mono); }
-.text-sm { font-size: 0.875rem; }
+.mono {
+  font-family: var(--font-mono, monospace);
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+.text-sm {
+  font-size: 0.85rem;
+}
 .text-xs { font-size: 0.75rem; }
 .muted { color: var(--text-secondary); }
 
@@ -85,11 +89,24 @@ header h1 {
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 4px 30px rgba(244, 196, 48, 0.5));
 }
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 3rem;
+  }
+}
 
 header .tag {
-  color: var(--text-secondary);
-  font-size: 1.05rem;
-  font-weight: 400;
+  color: var(--brand-cyan);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+@media (max-width: 768px) {
+  header .tag {
+    font-size: 0.85rem;
+    text-align: center;
+  }
 }
 
 /* ── Glassmorphism Utils ───────────────────────────────────────────── */
