@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { isConnected, setAllowed, getAddress } from "@stellar/freighter-api";
 import { querySolvent, attest, getCurrentLedgerSeq } from "./lib/stellar.js";
+import { t } from "./locales.js";
 
 const DEFAULT_CONTRACT = "CBONF5V5BZDHNVYRB5YEW2W2OQ7GNIS4M3CVQMUTMWACZFGD6RVY636U";
 const N = 8; // Holders que soporta el circuito
@@ -14,52 +15,71 @@ function toHex(bytes) {
 
 function timeAgo(unixTs) {
   const min = Math.floor((Date.now() / 1000 - Number(unixTs)) / 60);
-  if (min < 1) return "ahora mismo";
-  if (min < 60) return `hace ${min} min`;
-  return `hace ${Math.floor(min / 60)}h ${min % 60}min`;
+  if (min < 1) return "just now";
+  if (min < 60) return `${min} min ago`;
+  return `${Math.floor(min / 60)}h ${min % 60}min ago`;
+}
+
+// ── Componente: Modal de Error ─────────────────────────────────────────
+function ErrorModal({ error, onClose, lang }) {
+  if (!error) return null;
+  const btnText = lang === "es" ? "Cerrar" : "Close";
+  const titleText = lang === "es" ? "Operación Fallida" : "Operation Failed";
+  
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="modal-icon">❌</div>
+        <h3>{titleText}</h3>
+        <p>{error}</p>
+        <button className="btn-primary" onClick={onClose}>{btnText}</button>
+      </div>
+    </div>
+  );
 }
 
 // ── Componente: Certificado de Solvencia (Auditor) ──────────────────────
-function SolvencyCertificate({ att }) {
+function SolvencyCertificate({ att, lang }) {
   if (!att) return null;
   const isSolvent = att.solvent;
+  const str = t[lang];
 
   return (
     <div className="glass-panel certificate-card">
       <div className={`cert-header ${isSolvent ? "" : "insolvent"}`}>
         <div className="cert-icon">{isSolvent ? "🛡️" : "⚠️"}</div>
         <h2 style={{ color: isSolvent ? "var(--brand-emerald)" : "var(--brand-red)" }}>
-          {isSolvent ? "Certificado de Solvencia" : "Alerta de Insolvencia"}
+          {isSolvent ? str.certSolvent : str.certInsolvent}
         </h2>
         <p className="muted" style={{ marginTop: "0.5rem" }}>
-          Verificado criptográficamente en la red Soroban
+          {str.certSub}
         </p>
       </div>
       
       <div className="cert-body">
         <dl className="cert-kv">
           <div className="cert-kv-item">
-            <dt>Reservas On-Chain (XLM)</dt>
+            <dt>{str.reservesLabel}</dt>
             <dd>{Number(att.reserves).toLocaleString()}</dd>
           </div>
           <div className="cert-kv-item">
-            <dt>Pasivos Probados (ZK Proof)</dt>
+            <dt>{str.liabilitiesLabel}</dt>
             <dd style={{ color: "var(--brand-cyan)" }}>
-              🔒 Verificado: Pasivos ≤ Reservas
+              {str.verifiedBadge}
             </dd>
           </div>
           <div className="cert-kv-item">
-            <dt>Auditoría (Ledger Seq)</dt>
+            <dt>{str.auditLabel}</dt>
             <dd className="mono">#{String(att.ledger_seq)} <span className="muted text-sm">({timeAgo(att.timestamp)})</span></dd>
           </div>
         </dl>
         
         <details className="crypto-details">
-          <summary>Ver Detalles Criptográficos</summary>
+          <summary>{str.viewCryptoDetails}</summary>
           <pre className="crypto-pre">
-            Contrato Verifier: ZK UltraHonk{`\n`}
+            Verifier Contract: ZK UltraHonk{`\n`}
             Snapshot Timestamp: {new Date(Number(att.timestamp) * 1000).toISOString()}{`\n`}
-            Reservas crudas: {att.reserves.toString()}
+            Raw Reserves: {att.reserves.toString()}
           </pre>
         </details>
       </div>
@@ -68,11 +88,12 @@ function SolvencyCertificate({ att }) {
 }
 
 // ── Vista: Auditor Journey ──────────────────────────────────────────────
-function AuditorJourney({ onBack }) {
+function AuditorJourney({ onBack, lang }) {
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT);
   const [att, setAtt] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const str = t[lang];
 
   const verificar = async () => {
     if (!contractId) return;
@@ -84,7 +105,7 @@ function AuditorJourney({ onBack }) {
       if (r) {
         setAtt(r);
       } else {
-        setError("Este contrato aún no tiene una atestación ZK publicada.");
+        setError(str.errNoAttestation);
       }
     } catch (e) {
       setError(e.message);
@@ -93,18 +114,17 @@ function AuditorJourney({ onBack }) {
     }
   };
 
-  // Auto-verificar si hay un contrato por defecto
   useEffect(() => { verificar(); }, []);
 
   return (
     <section>
       <div className="view-header">
-        <button className="btn-back" onClick={onBack}>← Volver</button>
+        <button className="btn-back" onClick={onBack}>{str.backBtn}</button>
       </div>
       
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <h2>Auditoría Criptográfica</h2>
-        <p className="muted">Verifica matemáticamente que un emisor no opera con reserva fraccionaria.</p>
+        <h2>{str.auditorHeaderTitle}</h2>
+        <p className="muted">{str.auditorHeaderDesc}</p>
       </div>
 
       <div className="search-container">
@@ -112,98 +132,113 @@ function AuditorJourney({ onBack }) {
           className="search-input"
           value={contractId}
           onChange={e => setContractId(e.target.value)}
-          placeholder="Ingresa el Contract ID del Emisor..."
+          placeholder={str.searchPlaceholder}
         />
         <button className="btn-primary" onClick={verificar} disabled={loading || !contractId}>
-          {loading ? "Buscando..." : "Auditar"}
+          {loading ? str.btnAuditing : str.btnAudit}
         </button>
       </div>
 
-      {error && <div className="alert error">{error}</div>}
+      <ErrorModal error={error} onClose={() => setError("")} lang={lang} />
       
       {loading && !error && (
         <div style={{ textAlign: "center", color: "var(--brand-cyan)", marginTop: "2rem" }}>
-          <span className="spinner" style={{ borderColor: "var(--border-subtle)", borderTopColor: "var(--brand-cyan)" }} /> Analizando red...
+          <span className="spinner" style={{ borderColor: "var(--border-subtle)", borderTopColor: "var(--brand-cyan)" }} /> {str.analyzingNetwork}
         </div>
       )}
 
-      {!loading && att && <SolvencyCertificate att={att} />}
+      {!loading && att && <SolvencyCertificate att={att} lang={lang} />}
     </section>
   );
 }
 
 // ── Loader ZK Interactivo ───────────────────────────────────────────────
-function ZKLoader({ stepIndex }) {
+function ZKLoader({ stepIndex, lang }) {
+  const str = t[lang];
   const messages = [
-    "Descargando circuito WASM...",
-    "Construyendo Árbol de Merkle con saldos ocultos...",
-    "Generando Prueba ZK (UltraHonk) - Puede tomar 10~30s...",
-    "Alistando transacción para enviar a Soroban..."
+    str.zkMsg1,
+    str.zkMsg2,
+    str.zkMsg3,
+    str.zkMsg4
   ];
 
   const currentMsg = messages[Math.min(stepIndex, messages.length - 1)];
+
+  // Trivia rotation
+  const [triviaIdx, setTriviaIdx] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTriviaIdx(prev => (prev + 1) % str.triviaList.length);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [str.triviaList.length]);
 
   return (
     <div className="glass-panel zk-loader">
       <div className="scanner-box">
         <div className="scanner-line"></div>
       </div>
-      <h4>Computación ZK en Progreso</h4>
+      <h4>{str.zkProgressTitle}</h4>
       <p>{currentMsg}</p>
+
+      <div className="trivia-box">
+        <h5>💡 {str.triviaTitle}</h5>
+        <p key={triviaIdx}>{str.triviaList[triviaIdx]}</p>
+      </div>
     </div>
   );
 }
 
 // ── Vista: Issuer Wizard (Emisor) ───────────────────────────────────────
-function IssuerWizard({ onBack }) {
+function IssuerWizard({ onBack, lang }) {
   const [address, setAddress] = useState(null);
   const [balances, setBalances] = useState("100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000");
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT);
   
-  // Estado del Wizard: 0 = Wallet, 1 = Inputs, 2 = Generating, 3 = Done
   const [step, setStep] = useState(0);
   const [zkProgress, setZkProgress] = useState(0);
   const [txHash, setTxHash] = useState(null);
   const [error, setError] = useState("");
 
+  const str = t[lang];
   const balList = balances.split(/[\s,]+/).filter(Boolean);
   const count = balList.length;
 
   async function conectar() {
     try {
       if (!(await isConnected())) {
-        setError("Instala la extensión Freighter en tu navegador.");
+        setError("Install Freighter extension");
         return;
       }
       await setAllowed();
       const { address: addr } = await getAddress();
       setAddress(addr);
       setError("");
-      setStep(1); // Mover al siguiente paso
+      setStep(1); 
     } catch (e) {
-      setError(`Error conectando wallet: ${e.message}`);
+      setError(`Error: ${e.message}`);
     }
   }
 
   async function generarPrueba() {
     setError("");
-    setStep(2); // Entra a modo de carga
+    setStep(2); 
     setZkProgress(0);
 
     try {
-      setZkProgress(1); // Merkle tree
+      setZkProgress(1); 
       const { generateSolvencyProof } = await import("./lib/prover.js");
       const salts = balList.map((_, i) => String(i + 1));
       const ledgerSeq = await getCurrentLedgerSeq();
 
-      setZkProgress(2); // Proving
+      setZkProgress(2); 
       const { proof, publicInputs } = await generateSolvencyProof({
         balances: balList,
         salts,
         ledgerSeq,
       });
 
-      setZkProgress(3); // Signing
+      setZkProgress(3); 
       const { hash } = await attest({
         contractId: contractId.trim(),
         publicInputs,
@@ -212,61 +247,59 @@ function IssuerWizard({ onBack }) {
       });
 
       setTxHash(hash);
-      setStep(3); // Hecho
+      setStep(3); 
     } catch (e) {
       setError(e.message);
-      setStep(1); // Regresar al formulario
+      setStep(1); 
     }
   }
 
   return (
     <section>
       <div className="view-header">
-        <button className="btn-back" onClick={onBack}>← Volver</button>
+        <button className="btn-back" onClick={onBack}>{str.backBtn}</button>
       </div>
 
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <h2>Emisión de Solvencia</h2>
-        <p className="muted">Genera una prueba ZK de tus pasivos sin revelar la identidad ni los montos de tus clientes.</p>
+        <h2>{str.issuerHeaderTitle}</h2>
+        <p className="muted">{str.issuerHeaderDesc}</p>
       </div>
 
-      {error && <div className="alert error" style={{ marginBottom: "1.5rem" }}>{error}</div>}
+      <ErrorModal error={error} onClose={() => setError("")} lang={lang} />
 
       <div className="wizard-container">
-        {/* Step 1: Wallet */}
         {step < 2 && (
           <div className={`glass-panel wizard-step ${step === 0 ? "active" : step > 0 ? "completed" : ""}`}>
             <div className="wizard-step-header">
               <div className="step-circle">{step > 0 ? "✓" : "1"}</div>
-              <h3>Conectar Identidad</h3>
+              <h3>{str.step1Title}</h3>
             </div>
             {step === 0 ? (
-              <button className="btn-primary" onClick={conectar}>Conectar Freighter</button>
+              <button className="btn-primary" onClick={conectar}>{str.btnConnect}</button>
             ) : (
               <p className="mono text-sm text-gradient">{address}</p>
             )}
           </div>
         )}
 
-        {/* Step 2: Inputs */}
         {step === 1 && (
           <div className="glass-panel wizard-step active">
             <div className="wizard-step-header">
               <div className="step-circle">2</div>
-              <h3>Ingresar Pasivos Privados</h3>
+              <h3>{str.step2Title}</h3>
             </div>
             <p className="text-sm muted" style={{ marginBottom: "1rem" }}>
-              Ingresa los saldos de los clientes. El circuito criptográfico ocultará esta información permanentemente.
+              {str.step2Desc}
             </p>
             <textarea
               className="textarea-premium"
               value={balances}
               onChange={e => setBalances(e.target.value)}
-              placeholder="10000, 20000, ..."
+              placeholder={str.balancesPlaceholder}
             />
             <div className="counters">
               <div className={`counter-pill ${count === N ? "ok" : "err"}`}>
-                {count}/{N} Inputs Requeridos
+                {count}/{N} {str.inputsRequired}
               </div>
             </div>
             <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem", flexDirection: "column" }}>
@@ -275,34 +308,32 @@ function IssuerWizard({ onBack }) {
                 style={{ padding: "0.75rem", fontSize: "0.85rem" }}
                 value={contractId} 
                 onChange={e => setContractId(e.target.value)} 
-                placeholder="Contract ID de Destino" 
+                placeholder={str.contractIdPlaceholder} 
               />
               <button 
                 className="btn-primary" 
                 onClick={generarPrueba}
                 disabled={count !== N || !contractId}
               >
-                Generar Prueba Criptográfica →
+                {str.btnGenerateProof}
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Generación ZK */}
-        {step === 2 && <ZKLoader stepIndex={zkProgress} />}
+        {step === 2 && <ZKLoader stepIndex={zkProgress} lang={lang} />}
 
-        {/* Step 4: Éxito */}
         {step === 3 && txHash && (
           <div className="glass-panel certificate-card" style={{ marginTop: 0 }}>
             <div className="cert-header">
               <div className="cert-icon">🚀</div>
-              <h2 style={{ color: "var(--brand-emerald)" }}>Prueba Aceptada</h2>
+              <h2 style={{ color: "var(--brand-emerald)" }}>{str.proofAccepted}</h2>
               <p className="muted" style={{ marginTop: "0.5rem" }}>
-                La red de Soroban ha verificado y aceptado tu prueba de solvencia.
+                {str.proofAcceptedDesc}
               </p>
             </div>
             <div className="cert-body" style={{ textAlign: "center" }}>
-              <p className="text-sm muted" style={{ marginBottom: "1rem" }}>Hash de la transacción:</p>
+              <p className="text-sm muted" style={{ marginBottom: "1rem" }}>{str.txHashLabel}</p>
               <a 
                 href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} 
                 target="_blank" 
@@ -323,37 +354,57 @@ function IssuerWizard({ onBack }) {
 // ── App root ────────────────────────────────────────────────────────────
 export default function App() {
   const [view, setView] = useState("landing"); // 'landing', 'auditor', 'issuer'
+  const [lang, setLang] = useState("es"); // 'en', 'es'
+  
+  const str = t[lang];
 
   return (
     <main>
-      <header>
-        <h1 className="text-gradient">Veraz</h1>
-        <p className="tag">Auditoría criptográfica con Zero-Knowledge en Stellar</p>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button 
+          className="btn-secondary" 
+          onClick={() => setLang(lang === "es" ? "en" : "es")}
+          style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+        >
+          {lang === "es" ? "English" : "Español"}
+        </button>
+      </div>
+
+      <header style={{ paddingTop: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img 
+          src="/images/stellar-icon.webp" 
+          alt="Stellar Logo" 
+          style={{ width: '48px', height: '48px', marginBottom: '1rem', filter: 'drop-shadow(0 0 10px rgba(244, 196, 48, 0.4))' }} 
+        />
+        <h1 className="text-gradient" style={{ background: 'linear-gradient(135deg, var(--brand-stellar), #FFD700)', WebkitBackgroundClip: 'text' }}>
+          {str.appTitle}
+        </h1>
+        <p className="tag">{str.appSubtitle}</p>
       </header>
 
       {view === "landing" && (
         <div className="journey-grid">
           <div className="glass-panel glass-panel-interactive journey-card" onClick={() => setView("auditor")}>
             <div className="journey-icon">🔍</div>
-            <h2>Auditar Exchange</h2>
-            <p>Verifica matemáticamente que las reservas cubren todos los pasivos sin comprometer privacidad.</p>
+            <h2>{str.auditorCardTitle}</h2>
+            <p>{str.auditorCardDesc}</p>
           </div>
 
           <div className="glass-panel glass-panel-interactive journey-card" onClick={() => setView("issuer")}>
             <div className="journey-icon">🔐</div>
-            <h2>Probar Solvencia</h2>
-            <p>Genera una prueba criptográfica local que asegura a tus clientes que sus fondos están íntegros.</p>
+            <h2>{str.issuerCardTitle}</h2>
+            <p>{str.issuerCardDesc}</p>
           </div>
         </div>
       )}
 
-      {view === "auditor" && <AuditorJourney onBack={() => setView("landing")} />}
+      {view === "auditor" && <AuditorJourney onBack={() => setView("landing")} lang={lang} />}
       
-      {view === "issuer" && <IssuerWizard onBack={() => setView("landing")} />}
+      {view === "issuer" && <IssuerWizard onBack={() => setView("landing")} lang={lang} />}
 
       {view === "landing" && (
         <footer>
-          Diseñado con tecnología Noir & Soroban
+          {str.footerText}
         </footer>
       )}
     </main>
