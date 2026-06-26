@@ -6,17 +6,20 @@
 
 **Chainlink Proof of Reserves, but private, cryptographic, and Stellar-native.**
 
-[Demo Video](#demo-video) · [Live Demo](http://localhost:5173) · [Smart Contracts](#deployed-contracts-testnet) · [Documentation](./docs/) · [GitHub](https://github.com/carlos-israelj/veraz-proof-of-solvency)
+[Demo Video](#demo-video) · [Live Demo](http://localhost:5173) · [Smart Contracts](#deployed-contracts-testnet) · [Aquarius Integration](#-aquarius-amm-integration) · [Documentation](./docs/)
 
-[![Stellar Hacks](https://img.shields.io/badge/Stellar%20Hacks-Real--World%20ZK-blue)](https://stellarhacks.devpost.com/)
-[![Status](https://img.shields.io/badge/status-100%25%20complete-success)](./100_PERCENT_COMPLETION.md)
+[![PULSO Hackathon](https://img.shields.io/badge/PULSO%20Hackathon-Stellar%20LATAM-blue)](https://lu.ma/pulso)
+[![Aquarius Integration](https://img.shields.io/badge/SCF%20Integration-Aquarius%20AMM-green)](https://docs.aqua.network/)
+[![Status](https://img.shields.io/badge/status-testnet%20live-success)](#deployed-contracts-testnet)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 ---
 
 </div>
 
-## 🏆 Stellar Hacks: Real-World ZK Submission
+## 🏆 PULSO Hackathon Submission
+
+**Building on Stellar · Brazil · Argentina · Colombia**
 
 ### The Problem
 
@@ -51,13 +54,16 @@ Stablecoin and RWA (Real-World Asset) issuers on Stellar face a critical dilemma
 
 ## Table of Contents
 
+- [PULSO Hackathon Submission](#-pulso-hackathon-submission)
 - [Core Features](#core-features)
+  - [Aquarius AMM Integration](#-aquarius-amm-integration)
 - [Technical Specifications](#technical-specifications)
 - [How It Works](#how-it-works)
 - [Architecture](#architecture)
 - [Demo Video](#demo-video)
 - [Quick Start](#quick-start)
 - [Deployed Contracts](#deployed-contracts-testnet)
+- [Stellar Ecosystem Integrations](#stellar-ecosystem-integrations)
 - [Technology Stack](#technology-stack)
 - [Use Cases](#real-world-use-cases)
 - [Technical Deep Dive](#technical-deep-dive)
@@ -91,6 +97,33 @@ UltraHonk verifier deployed on Stellar testnet performs actual cryptographic pro
 ### 📊 Live Reserve Reading
 
 Reads reserves directly from Stellar Asset Contracts in real-time. No manual updates, no stale data—queries blockchain state during verification.
+
+### 🌊 Aquarius AMM Integration
+
+**Stellar Ecosystem Integration (SCF Official Building Block)**
+
+Veraz integrates with **Aquarius**, Stellar's native liquidity and swap routing protocol, enabling comprehensive solvency verification for issuers whose reserves include AMM pool positions.
+
+**Why This Matters:**
+- Many stablecoin issuers provide liquidity to DEXs to bootstrap markets
+- Traditional PoS solutions only count direct token balances, missing pool shares
+- Veraz reads both SAC balances AND Aquarius LP positions as total reserves
+
+**Technical Implementation:**
+- **Integration Code**: `contracts/solvency_policy/src/aquarius.rs` (94 lines)
+- **Pool Contract**: `CCGFVAHVN4XGY2SKWNCLBMIJ6EPT3FELLMIBQMVTC2DNVX3HPBA23OMU`
+- **Pool Type**: USDC/XLM constant product (0.10% fee)
+- **Testnet Deployment**: Live and functional
+- **Reserve Calculation**: `total_reserves = sac_balance + aquarius_pool_shares`
+
+**Customer Validation:**
+Through customer discovery interviews, we confirmed that 2/3 issuers actively provide liquidity to DEXs and require pool positions to count towards solvency calculations.
+
+**Aquarius Resources:**
+- [Official Documentation](https://docs.aqua.network/)
+- [Integration Guide](https://discord.gg/aquarius) (Discord support)
+- [SCF Integration List](https://stellar.org/community-fund/integration-list) - Official building block
+- Integration Time: Under 1 day ✅
 
 ### 🛡️ Security Guarantees
 
@@ -402,6 +435,91 @@ pub fn attest(
 // Query current solvency status (public)
 pub fn is_solvent(env: Env) -> Option<Attestation>
 ```
+
+---
+
+## Stellar Ecosystem Integrations
+
+### Aquarius AMM (Official SCF Building Block)
+
+**Integration Status**: ✅ **FULLY INTEGRATED** · Live on Testnet
+
+Veraz leverages **Aquarius**, Stellar's native liquidity and swap routing protocol, to provide comprehensive solvency verification for stablecoin issuers whose reserves include AMM liquidity pool positions.
+
+#### Why Aquarius Integration Matters
+
+Traditional Proof of Solvency solutions only account for direct token balances held in wallets. However, modern stablecoin issuers often:
+- Provide liquidity to DEXs to bootstrap trading markets
+- Earn fees from liquidity provision
+- Maintain reserves across multiple venues (wallets + pools)
+
+Without Aquarius integration, these pool shares would be invisible to solvency verification, understating true reserves and potentially failing valid attestations.
+
+#### Technical Implementation
+
+| Component | Details |
+|-----------|---------|
+| **Source Code** | `contracts/solvency_policy/src/aquarius.rs` (94 lines) |
+| **Pool Contract** | `CCGFVAHVN4XGY2SKWNCLBMIJ6EPT3FELLMIBQMVTC2DNVX3HPBA23OMU` |
+| **Pool Type** | USDC/XLM constant product pool |
+| **Fee Tier** | 0.10% (lowest available - most efficient) |
+| **Integration Method** | Cross-contract calls to read LP token balances |
+| **Reserve Formula** | `total_reserves = sac_balance + pool_shares` |
+
+#### How It Works
+
+```rust
+// 1. Read direct SAC balances
+for acct in cfg.reserve_accounts.iter() {
+    reserves += token.balance(&acct);
+}
+
+// 2. Read Aquarius pool shares
+if !cfg.aquarius_pools.is_empty() {
+    for acct in cfg.reserve_accounts.iter() {
+        reserves += aquarius::read_aquarius_reserves(
+            &env,
+            &cfg.aquarius_pools,
+            &acct
+        )?;
+    }
+}
+
+// 3. Compare total reserves against ZK-proven liabilities
+let solvent = reserves >= liabilities;
+```
+
+#### Customer Validation
+
+Through PULSO Hackathon customer discovery interviews:
+- **2 of 3 issuers** confirmed they actively provide liquidity to DEXs
+- **All 2** stated pool shares must count towards total reserves
+- **Key insight**: "We can't prove solvency if 30% of our reserves are locked in pools and not counted"
+
+#### Live Deployment
+
+**Testnet Contracts**:
+- **SolvencyPolicy (with Aquarius)**: `CDPMSYQ3HRBL4YFEI5HPQOHEVGSHKJ4KAE3OTUGAVTAJ2OC3B2BZ3VW5`
+- **Configured Pool**: USDC/XLM @ `CCGFVAHVN4XGY2SKWNCLBMIJ6EPT3FELLMIBQMVTC2DNVX3HPBA23OMU`
+
+**Integration Time**: < 1 day ✅ (as specified in SCF Integration List)
+
+#### Resources
+
+- **Aquarius Documentation**: https://docs.aqua.network/
+- **SCF Integration List**: https://stellar.org/community-fund/integration-list
+- **Testnet Pool Explorer**: https://stellar.expert/explorer/testnet/contract/CCGFVAHVN4XGY2...
+- **Integration Code**: [contracts/solvency_policy/src/aquarius.rs](./contracts/solvency_policy/src/aquarius.rs)
+- **Developer Support**: Discord community (see Aquarius docs)
+
+#### Future Integrations (Roadmap)
+
+**Planned Q3-Q4 2026**:
+- **Blend v2**: Read lending positions as reserves (for yield-optimized issuers)
+- **DeFindex**: Yield vault positions integration
+- **Soroswap**: Additional AMM pool support (complementing Aquarius)
+
+These integrations follow the same pattern as Aquarius: cross-contract calls to read position balances and aggregate into total reserves.
 
 ---
 
