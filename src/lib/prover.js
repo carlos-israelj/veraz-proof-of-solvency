@@ -55,10 +55,10 @@ export async function generateSolvencyProof({ balances, salts, ledgerSeq }) {
     );
   }
 
-  // ── 3. Generar prueba UltraHonk ──────────────────────────────────────
-  console.log("🔐 Generando prueba UltraHonk (10–30s)...");
+  // ── 3. Generar prueba UltraHonk con Keccak (compatible con verifier on-chain) ──
+  console.log("🔐 Generando prueba UltraHonk con Keccak (10–30s)...");
   const backend = new UltraHonkBackend(circuit.bytecode);
-  const { proof, publicInputs: rawPI } = await backend.generateProof(witness);
+  const { proof, publicInputs: rawPI } = await backend.generateProof(witness, { keccak: true });
 
   console.log("  proof.length:", proof.length);
   console.log("  publicInputs raw type:", rawPI?.constructor?.name, "length:", rawPI?.length);

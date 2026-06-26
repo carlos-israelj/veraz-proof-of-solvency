@@ -14,19 +14,21 @@ export const config = {
 const rpc = new StellarSdk.rpc.Server(config.rpcUrl);
 
 // Cuenta "dummy" para simular llamadas de solo lectura sin necesidad de firma.
+// Esta es una cuenta válida con checksum correcto que se usa solo para simulaciones (no necesita existir en la red)
 const READONLY_SOURCE =
-  "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF5";
+  "GB6NVEN5HSUBKMYCE5ZOWSK5K23TBWRUQLZY3KNMXUZ3AQ2ESC4MY4AQ";
 
 // Mapa de errores del contrato Solvency Policy a mensajes amigables
+// IMPORTANTE: Estos códigos coinciden con la reorganización del backend (ver BACKEND_RESOLUTION.md)
 const CONTRACT_ERRORS = {
   "Error(Contract, #1)": "El contrato ya fue inicializado.",
   "Error(Contract, #2)": "El contrato no ha sido inicializado.",
-  "Error(Contract, #3)": "Prueba ZK inválida. Verifica que los balances y salts sean correctos.",
-  "Error(Contract, #4)": "Prueba rechazada (Stale / Verifier). El ledger_seq expiró O la llave de verificación del contrato no coincide con el circuito local.",
-  "Error(Contract, #5)": "Replay detectado. Ya se usó este ledger_seq. Espera al siguiente ledger.",
-  "Error(Contract, #6)": "Insolvente: las reservas on-chain son menores que los pasivos probados.",
-  "Error(Contract, #7)": "Public inputs con formato incorrecto. Deben ser exactamente 96 bytes.",
-  "Error(Contract, #8)": "Overflow en la suma de pasivos.",
+  "Error(Contract, #3)": "Public inputs con formato incorrecto. Deben ser exactamente 96 bytes.",
+  "Error(Contract, #4)": "Verificación ZK falló. La prueba fue rechazada por el verifier on-chain. Verifica que el circuito local coincida con el VK del contrato.",
+  "Error(Contract, #10)": "Prueba obsoleta (StaleProof). El ledger_seq está fuera de la ventana de frescura (100 ledgers).",
+  "Error(Contract, #11)": "Replay detectado. Ya se usó este ledger_seq. Espera al siguiente ledger.",
+  "Error(Contract, #12)": "Insolvente: las reservas on-chain son menores que los pasivos probados.",
+  "Error(Contract, #13)": "Overflow en la suma de pasivos o reservas.",
 };
 
 function parseContractError(message) {
@@ -59,25 +61,38 @@ export async function getCurrentLedgerSeq() {
 
 // Lectura del badge público: simula is_solvent y devuelve la atestación nativa.
 export async function querySolvent(contractId) {
-  const account = new StellarSdk.Account(READONLY_SOURCE, "0");
-  const contract = new StellarSdk.Contract(contractId);
+  try {
+    console.log("[querySolvent] Iniciando consulta para contractId:", contractId);
+    const account = new StellarSdk.Account(READONLY_SOURCE, "0");
+    const contract = new StellarSdk.Contract(contractId);
 
-  const tx = new StellarSdk.TransactionBuilder(account, {
-    fee: StellarSdk.BASE_FEE,
-    networkPassphrase: config.networkPassphrase,
-  })
-    .addOperation(contract.call("is_solvent"))
-    .setTimeout(30)
-    .build();
+    const tx = new StellarSdk.TransactionBuilder(account, {
+      fee: StellarSdk.BASE_FEE,
+      networkPassphrase: config.networkPassphrase,
+    })
+      .addOperation(contract.call("is_solvent"))
+      .setTimeout(30)
+      .build();
 
-  const sim = await rpc.simulateTransaction(tx);
-  if (StellarSdk.rpc.Api.isSimulationError(sim)) {
-    const friendly = parseContractError(sim.error);
-    throw new Error(friendly || `Simulación falló: ${sim.error}`);
+    console.log("[querySolvent] Simulando transacción...");
+    const sim = await rpc.simulateTransaction(tx);
+    console.log("[querySolvent] Resultado de simulación:", sim);
+
+    if (StellarSdk.rpc.Api.isSimulationError(sim)) {
+      console.error("[querySolvent] Error en simulación:", sim.error);
+      const friendly = parseContractError(sim.error);
+      throw new Error(friendly || `Simulación falló: ${sim.error}`);
+    }
+    const retval = sim.result?.retval;
+    console.log("[querySolvent] Valor de retorno:", retval);
+    if (!retval) return null;
+    const result = StellarSdk.scValToNative(retval);
+    console.log("[querySolvent] Resultado deserializado:", result);
+    return result;
+  } catch (error) {
+    console.error("[querySolvent] Error capturado:", error);
+    throw error;
   }
-  const retval = sim.result?.retval;
-  if (!retval) return null;
-  return StellarSdk.scValToNative(retval);
 }
 
 // Atestación: el emisor envía (public_inputs, proof) al contrato. Firma con Freighter.
@@ -140,5 +155,9 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress })
     const friendly = parseContractError(errStr);
     throw new Error(friendly || `Transacción falló: ${res.status}`);
   }
-  return { hash: sent.hash, returnValue: res.returnValue };
+
+  // No intentamos deserializar el returnValue porque Result<bool, Error> causa problemas
+  // Si llegamos aquí, la transacción fue exitosa
+  console.log("✅ Transacción confirmada on-chain:", sent.hash);
+  return { hash: sent.hash };
 }

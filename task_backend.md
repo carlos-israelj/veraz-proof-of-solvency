@@ -31,16 +31,102 @@ Para completar el flujo E2E, el desarrollador backend debe encargarse de lo sigu
 - [x] **Actualizar la Configuración:** ✅ Desplegado nuevo SolvencyPolicy: `CBUGYVTOHYNXI7MOLPSQCPZRAF6NSRHIVOROZQVAB23DJVYIUE6REJK7` con nuevo verifier ID
 - [x] **Manejo de Errores Mejorado:** ✅ Reorganizados códigos de error para evitar colisiones (StaleProof ahora es Error 10, VerificationFailed del verifier es Error 4)
 
-## 5. ✅ Resolución Completada (25 de junio, 2026)
+## 5. ✅ Resolución Inicial (25 de junio, 2026)
 
-**Estado**: RESUELTO - Sistema E2E Funcional
+**Estado Fase 1**: RESUELTO - VK Mismatch Corregido
 
-La Llave de Verificación en cadena ahora coincide matemáticamente con las pruebas generadas por el cliente. El sistema de comprobación ZK funciona correctamente de principio a fin.
+La Llave de Verificación en cadena ahora coincide matemáticamente con las pruebas generadas por el cliente.
 
-**Componentes Actualizados**:
-- Nuevo Verifier: `CB4QLDEITCZKTXSVBDP7YFT5DFLU35DV5OZCCSAZFYEEWEEBS7CIWPGM`
-- Nuevo SolvencyPolicy: `CBUGYVTOHYNXI7MOLPSQCPZRAF6NSRHIVOROZQVAB23DJVYIUE6REJK7`
-- Frontend actualizado con nuevo contract ID
-- VK regenerada con bb 0.87.0 (compatible con frontend)
+**Componentes Actualizados Fase 1**:
+- Verifier: `CB4QLDEITCZKTXSVBDP7YFT5DFLU35DV5OZCCSAZFYEEWEEBS7CIWPGM`
+- SolvencyPolicy: `CBUGYVTOHYNXI7MOLPSQCPZRAF6NSRHIVOROZQVAB23DJVYIUE6REJK7`
+- VK regenerada con bb 0.87.0
 
-Ver **BACKEND_RESOLUTION.md** para documentación completa de la resolución.
+Ver **BACKEND_RESOLUTION.md** para documentación completa de la primera resolución.
+
+## 6. 🔄 Segunda Iteración: Integración Keccak + SDK 26 (26 de junio, 2026)
+
+### 6.1 Descubrimiento del Requisito Oracle Hash
+Tras resolver el VK mismatch, las pruebas seguían fallando con Error #4. Investigación en Discord y documentación oficial reveló:
+
+**Requisitos del Verifier UltraHonk para Soroban**:
+- ✅ Usar **Soroban SDK 26** (no SDK 25)
+- ✅ Habilitar **CAP-80 host functions** (operaciones BN254 nativas)
+- ✅ Oracle hash debe ser **Keccak-256** (no Poseidon2)
+- ✅ VK regenerada con `--oracle_hash keccak`
+- ✅ Pruebas generadas con flag `{ keccak: true }`
+
+### 6.2 Repositorio Correcto del Verifier
+**Fuente**: [yugocabrio/rs-soroban-ultrahonk](https://github.com/yugocabrio/rs-soroban-ultrahonk)
+**Commit**: `661db07` (SDK 26 + CAP-80)
+
+### 6.3 Tareas Ejecutadas - Fase 2
+
+- [x] **Actualizar Verifier a SDK 26**: ✅ Clonado repositorio correcto con SDK 26
+- [x] **Regenerar VK con Keccak**: ✅ Ejecutado `bb write_vk --oracle_hash keccak`
+- [x] **Redesplegar Verifier con VK Keccak**: ✅ `CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK`
+- [x] **Corregir Configuración de SolvencyPolicy**: ✅ Formato correcto de `Vec<Address>`
+- [x] **Redesplegar SolvencyPolicy**: ✅ `CCEZTVM2OKDZ2HIUMS4XHR2PB7JALT6Z4GC5EFWESN3CCZ2A3X7DF62M`
+- [x] **Actualizar Frontend con Keccak Flag**: ✅ Agregado `{ keccak: true }` en prover.js
+
+### 6.4 Componentes Finales Desplegados
+
+**Smart Contracts**:
+- **Verifier (SDK 26 + Keccak)**: `CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK`
+- **SolvencyPolicy**: `CCEZTVM2OKDZ2HIUMS4XHR2PB7JALT6Z4GC5EFWESN3CCZ2A3X7DF62M`
+- **Reserve SAC (USDC)**: `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
+- **Reserve Account**: `GCY4CQHYSGI2MKE24R6ASMSX6EN6VQDYQZIC2NG3FSLJML6ELPFQAPKT`
+
+**Configuración Corregida**:
+```json
+{
+  "verifier": "CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK",
+  "reserve_sac": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+  "reserve_accounts": [{"address":"GCY4CQHYSGI2MKE24R6ASMSX6EN6VQDYQZIC2NG3FSLJML6ELPFQAPKT"}],
+  "freshness_window": 100,
+  "aquarius_pools": []
+}
+```
+
+### 6.5 Evidencia de Éxito On-Chain
+
+**Transacción Exitosa**: [14124983500423168](https://stellar.expert/explorer/testnet/tx/14124983500423168)
+
+**Evento Emitido**:
+```
+Event: 0014124983500423168-0000000000
+Ledger: 3288729
+Contract: CCEZTVM2OKDZ2HIUMS4XHR2PB7JALT6Z4GC5EFWESN3CCZ2A3X7DF62M
+Topics: Symbol(solvency)
+Value: Vec([Bool(true), U32(3288730)])
+```
+
+**Atestación Verificable**:
+```json
+{
+  "solvent": true,
+  "reserves": "100000000000",
+  "liabilities": "400000",
+  "ledger_seq": 3288730,
+  "timestamp": 1782457771
+}
+```
+
+### 6.6 Estado Actual del Sistema
+
+✅ **Backend (On-Chain)**: COMPLETAMENTE FUNCIONAL
+- Verificación ZK exitosa con Keccak oracle hash
+- Lectura de reservas desde SAC funciona correctamente
+- Atestaciones se guardan y persisten en el ledger
+- Eventos se emiten correctamente
+
+🚧 **Frontend (UI)**: Pendiente corrección deserialización
+- Las transacciones se confirman exitosamente on-chain
+- Error de UI al deserializar `Result<bool, Error>`
+- Ver **task_frontend.md** para detalles y pendientes
+
+## 7. Documentación Relacionada
+
+- **BACKEND_RESOLUTION.md**: Resolución detallada del VK mismatch
+- **task_frontend.md**: Estado y pendientes del frontend
+- **Discord Thread**: Solución SDK 26 + Keccak (referenciada en BACKEND_RESOLUTION.md)

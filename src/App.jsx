@@ -4,7 +4,7 @@ import { querySolvent, attest, getCurrentLedgerSeq } from "./lib/stellar.js";
 import { t } from "./locales.js";
 import { startTour } from "./lib/tours.js";
 
-const DEFAULT_CONTRACT = "CBUGYVTOHYNXI7MOLPSQCPZRAF6NSRHIVOROZQVAB23DJVYIUE6REJK7";
+const DEFAULT_CONTRACT = "CCEZTVM2OKDZ2HIUMS4XHR2PB7JALT6Z4GC5EFWESN3CCZ2A3X7DF62M";
 const N = 8; // Holders que soporta el circuito
 
 // ── Utilidades ─────────────────────────────────────────────────────────
@@ -240,15 +240,17 @@ function IssuerWizard({ onBack, lang }) {
         ledgerSeq,
       });
 
-      setZkProgress(3); 
-      const { hash } = await attest({
+      setZkProgress(3);
+      console.log("🔄 Enviando atestación al contrato...");
+      const result = await attest({
         contractId: contractId.trim(),
         publicInputs,
         proof,
         sourceAddress: address,
       });
+      console.log("✅ Atestación exitosa:", result);
 
-      setTxHash(hash);
+      setTxHash(result.hash);
       setStep(3); 
     } catch (e) {
       setError(e.message);
