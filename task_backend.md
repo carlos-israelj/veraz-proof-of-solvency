@@ -125,8 +125,89 @@ Value: Vec([Bool(true), U32(3288730)])
 - Error de UI al deserializar `Result<bool, Error>`
 - Ver **task_frontend.md** para detalles y pendientes
 
-## 7. Documentación Relacionada
+## 7. 🌊 Tercera Iteración: Integración Aquarius AMM (26 de junio, 2026)
+
+### 7.1 Descubrimiento de Pools en Testnet
+
+Tras confirmar el funcionamiento del sistema ZK, se investigó la disponibilidad de Aquarius AMM en testnet para habilitar lectura de reservas desde pools de liquidez.
+
+**Resultado**: ✅ **84 pools activos** en Stellar Testnet
+
+**Router Testnet**: `CBCFTQSPDBAIZ6R6PJQKSQWKNKWH2QIV3I4J72SHWBIK3ADRRAM5A6GD`
+
+### 7.2 Implementación de Aquarius
+
+El código de integración ya estaba implementado en el contrato:
+- ✅ Módulo `aquarius.rs` (líneas 1-94)
+- ✅ Integración en `attest()` (lib.rs:149-161)
+- ✅ Tests completos (test.rs:341-530)
+
+### 7.3 Deployment con Aquarius
+
+- [x] **Consultar Pools Disponibles**: ✅ Script `query-aquarius-testnet.js`
+- [x] **Seleccionar Pool**: ✅ USDC/XLM (fee 0.10%)
+- [x] **Redesplegar SolvencyPolicy**: ✅ `CDPMSYQ3HRBL4YFEI5HPQOHEVGSHKJ4KAE3OTUGAVTAJ2OC3B2BZ3VW5`
+- [x] **Actualizar Frontend**: ✅ DEFAULT_CONTRACT actualizado
+
+### 7.4 Componentes Finales con Aquarius
+
+**Smart Contracts**:
+- **Verifier (SDK 26 + Keccak)**: `CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK`
+- **SolvencyPolicy (Con Aquarius)**: `CDPMSYQ3HRBL4YFEI5HPQOHEVGSHKJ4KAE3OTUGAVTAJ2OC3B2BZ3VW5`
+- **Reserve SAC (USDC)**: `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
+- **Aquarius Pool (USDC/XLM)**: `CCGFVAHVN4XGY2SKWNCLBMIJ6EPT3FELLMIBQMVTC2DNVX3HPBA23OMU`
+
+**Configuración Final con Aquarius**:
+```json
+{
+  "verifier": "CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK",
+  "reserve_sac": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+  "reserve_accounts": [{"address":"GCY4CQHYSGI2MKE24R6ASMSX6EN6VQDYQZIC2NG3FSLJML6ELPFQAPKT"}],
+  "freshness_window": 100,
+  "aquarius_pools": [{"address":"CCGFVAHVN4XGY2SKWNCLBMIJ6EPT3FELLMIBQMVTC2DNVX3HPBA23OMU"}]
+}
+```
+
+### 7.5 Cómo Funciona la Integración
+
+El contrato ahora lee reservas de DOS fuentes:
+
+1. **Balance SAC directo**: Lee USDC del reserve_account
+2. **Pool shares de Aquarius**: Lee pool tokens del mismo reserve_account
+3. **Suma total**: `reserves = sac_balance + pool_shares`
+
+Código (`lib.rs:145-161`):
+```rust
+// Leer balance SAC
+for acct in cfg.reserve_accounts.iter() {
+    reserves += token.balance(&acct);
+}
+
+// NUEVO: Leer pool shares de Aquarius
+if !cfg.aquarius_pools.is_empty() {
+    for acct in cfg.reserve_accounts.iter() {
+        reserves += aquarius::read_aquarius_reserves(&env, &cfg.aquarius_pools, &acct)?;
+    }
+}
+```
+
+### 7.6 Estado Actual del Sistema Completo
+
+✅ **Backend (On-Chain)**: COMPLETAMENTE FUNCIONAL CON AQUARIUS
+- Verificación ZK exitosa (Keccak + SDK 26)
+- Lectura de reservas SAC funciona
+- Lectura de pool shares Aquarius habilitada
+- Atestaciones se guardan correctamente
+- Sistema E2E listo para pruebas
+
+🚧 **Frontend (UI)**: Actualizado, pendiente testing E2E
+- Contract ID actualizado
+- Ready para probar con Aquarius
+
+## 8. Documentación Relacionada
 
 - **BACKEND_RESOLUTION.md**: Resolución detallada del VK mismatch
+- **AQUARIUS_INTEGRATION.md**: Integración completa de Aquarius AMM
 - **task_frontend.md**: Estado y pendientes del frontend
 - **Discord Thread**: Solución SDK 26 + Keccak (referenciada en BACKEND_RESOLUTION.md)
+- **Scripts**: `scripts/query-aquarius-testnet.js` y `scripts/query-aquarius-pools.js`

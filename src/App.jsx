@@ -4,7 +4,7 @@ import { querySolvent, attest, getCurrentLedgerSeq } from "./lib/stellar.js";
 import { t } from "./locales.js";
 import { startTour } from "./lib/tours.js";
 
-const DEFAULT_CONTRACT = "CCEZTVM2OKDZ2HIUMS4XHR2PB7JALT6Z4GC5EFWESN3CCZ2A3X7DF62M";
+const DEFAULT_CONTRACT = "CDPMSYQ3HRBL4YFEI5HPQOHEVGSHKJ4KAE3OTUGAVTAJ2OC3B2BZ3VW5";
 const N = 8; // Holders que soporta el circuito
 
 // ── Utilidades ─────────────────────────────────────────────────────────
