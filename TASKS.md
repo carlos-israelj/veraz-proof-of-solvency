@@ -1,17 +1,18 @@
 # Veraz - Tareas Pendientes para Sistema Funcional End-to-End
 
-**Última actualización**: 24 de junio de 2026
-**Estado actual**: Sistema desplegado en testnet con Error #4 resuelto
+**Última actualización**: 26 de junio de 2026
+**Estado actual**: Backend E2E funcional, pendiente fix en frontend UI
 
 ---
 
 ## 🎯 Objetivo
 
 Completar el sistema de Proof of Solvency funcional end-to-end:
-- ✅ Contratos desplegados y configurados
-- ⚠️ Frontend genera pruebas pero falta testing completo
-- ❌ Falta testing end-to-end del flujo completo
-- ❌ Documentación actualizada con nuevos contract IDs
+- ✅ Contratos desplegados y configurados (SDK 26 + Keccak)
+- ✅ Frontend genera pruebas ZK correctamente con Keccak oracle hash
+- ✅ Verificación on-chain funcional (atestaciones confirmadas en testnet)
+- 🚧 Pendiente: Fix error de deserialización en UI (transacciones exitosas pero mensaje de error)
+- ⚠️ Documentación actualizada con nuevos contract IDs
 
 ---
 
