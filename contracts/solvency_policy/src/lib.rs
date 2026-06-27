@@ -52,15 +52,19 @@ pub struct Config {
     pub reserve_accounts: Vec<Address>, // Cuentas de reserva del emisor
     pub freshness_window: u32,          // Máx. antigüedad en ledgers
     pub aquarius_pools: Vec<Address>,   // OPTIONAL: Aquarius AMM pool addresses (can be empty)
+    pub defindex_vaults: Vec<Address>,  // OPTIONAL: DeFindex vault addresses (can be empty)
 }
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Attestation {
     pub solvent: bool,
-    pub reserves: i128,     // R (público on-chain de todos modos)
-    pub liabilities: i128,  // L (extraído de public_inputs)
-    pub ledger_seq: u32,    // Frescura del snapshot de pasivos
+    pub reserves: i128,          // R total (SAC + Aquarius + DeFindex)
+    pub sac_balance: i128,       // SAC wallet balance
+    pub aquarius_balance: i128,  // Aquarius pool shares balance
+    pub defindex_balance: i128,  // DeFindex vault balance (converted to assets)
+    pub liabilities: i128,       // L (extraído de public_inputs)
+    pub ledger_seq: u32,         // Frescura del snapshot de pasivos
     pub timestamp: u64,
 }
 
@@ -138,12 +142,14 @@ impl SolvencyPolicy {
 
         // 4. Leer reservas EN VIVO desde el ledger (sin auth: balance es read-only)
         let token = TokenClient::new(&env, &cfg.reserve_sac);
-        let mut reserves: i128 = 0;
+        let mut sac_balance: i128 = 0;
+        let mut aquarius_balance: i128 = 0;
+        let mut defindex_balance: i128 = 0;
 
-        // 4a. Read reserves from regular accounts
+        // 4a. Read reserves from SAC wallets
         for acct in cfg.reserve_accounts.iter() {
             let balance = token.balance(&acct);
-            reserves = reserves.checked_add(balance).ok_or(Error::Overflow)?;
+            sac_balance = sac_balance.checked_add(balance).ok_or(Error::Overflow)?;
         }
 
         // 4b. OPTIONAL: Read reserves from Aquarius AMM pools
@@ -151,26 +157,50 @@ impl SolvencyPolicy {
         // Pool shares are queried for each reserve account (same accounts that hold direct reserves)
         if !cfg.aquarius_pools.is_empty() {
             for acct in cfg.reserve_accounts.iter() {
-                let aquarius_reserves = aquarius::read_aquarius_reserves(
+                let pool_reserves = aquarius::read_aquarius_reserves(
                     &env,
                     &cfg.aquarius_pools,
                     &acct,
                 )?;
-                reserves = reserves.checked_add(aquarius_reserves).ok_or(Error::Overflow)?;
+                aquarius_balance = aquarius_balance.checked_add(pool_reserves).ok_or(Error::Overflow)?;
             }
         }
 
+        // 4c. OPTIONAL: Read reserves from DeFindex yield vaults
+        // If defindex_vaults is empty, this is skipped (no overhead)
+        // Vault shares are automatically converted to underlying asset value
+        if !cfg.defindex_vaults.is_empty() {
+            for acct in cfg.reserve_accounts.iter() {
+                let vault_value = defindex::read_defindex_vaults(
+                    &env,
+                    &cfg.defindex_vaults,
+                    &acct,
+                )?;
+                defindex_balance = defindex_balance.checked_add(vault_value).ok_or(Error::Overflow)?;
+            }
+        }
+
+        // 4d. Calculate total reserves
+        let total_reserves = sac_balance
+            .checked_add(aquarius_balance).ok_or(Error::Overflow)?
+            .checked_add(defindex_balance).ok_or(Error::Overflow)?;
+
         // 5. Solvencia: R ≥ L
-        let solvent = reserves >= l_value;
+        let solvent = total_reserves >= l_value;
 
         // 6. Persistir estado + anti-replay + evento
         env.storage().instance().set(&DataKey::LastSeq, &snap_seq);
-        Self::write_attestation(&env, solvent, reserves, l_value, snap_seq);
+        Self::write_attestation(&env, solvent, total_reserves, sac_balance, aquarius_balance, defindex_balance, l_value, snap_seq);
 
-        // Emitir evento
+        // Emitir evento con breakdown
         env.events().publish(
             (Symbol::new(&env, "solvency"),),
             (solvent, snap_seq),
+        );
+
+        env.events().publish(
+            (Symbol::new(&env, "breakdown"),),
+            (sac_balance, aquarius_balance, defindex_balance, total_reserves),
         );
 
         if !solvent {
@@ -199,12 +229,18 @@ impl SolvencyPolicy {
         env: &Env,
         solvent: bool,
         reserves: i128,
+        sac_balance: i128,
+        aquarius_balance: i128,
+        defindex_balance: i128,
         liabilities: i128,
         ledger_seq: u32,
     ) {
         let att = Attestation {
             solvent,
             reserves,
+            sac_balance,
+            aquarius_balance,
+            defindex_balance,
             liabilities,
             ledger_seq,
             timestamp: env.ledger().timestamp(),
@@ -251,6 +287,7 @@ impl SolvencyPolicy {
 }
 
 mod aquarius;
+mod defindex;
 
 #[cfg(test)]
 mod mock_verifier;

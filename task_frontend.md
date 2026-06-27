@@ -1,5 +1,8 @@
 # Tareas Frontend: Integración Oracle Hash Keccak y SDK 26
 
+**Última actualización**: 27 de junio de 2026
+**Estado**: 🟢 Backend verificado funcional | 🟡 Frontend en diagnóstico
+
 Este documento detalla las actualizaciones y pendientes del frontend para completar la integración del sistema de Proof of Solvency con el nuevo verifier basado en Soroban SDK 26 y CAP-80.
 
 ## 1. Contexto de la Actualización
@@ -83,9 +86,9 @@ El deployment inicial tenía un error en la estructura de datos de Soroban:
 
 ### 🚧 Pendientes
 
-#### P1: Resolver Error de Deserialización en UI - PERSISTENTE
-**Estado**: 🔴 BLOQUEADOR CRÍTICO - Sin resolver tras múltiples intentos
-**Descripción**: Aunque las transacciones se confirman exitosamente on-chain y las atestaciones se guardan correctamente, el frontend muestra "Operación Fallida - Bad union switch: 4" al recibir la respuesta.
+#### P1: Resolver Error de Deserialización en UI - EN DIAGNÓSTICO
+**Estado**: 🟡 Backend verificado funcional - Requiere diagnóstico de entorno usuario
+**Descripción**: El backend funciona correctamente (verificado con script de diagnóstico). El error "Bad union switch: 4" parece ser específico del entorno del usuario (cache, versiones, etc.).
 
 **Evidencia de Éxito On-Chain**:
 - ✅ Transacción confirmada: [14124983500423168](https://stellar.expert/explorer/testnet/tx/14124983500423168)

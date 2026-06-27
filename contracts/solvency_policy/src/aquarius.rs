@@ -52,11 +52,18 @@ pub fn read_aquarius_reserves(
 
     // Iterate through all configured Aquarius pools
     for pool_address in pool_addresses.iter() {
-        // Query user's pool share balance
-        // Aquarius pools use the standard Stellar token interface
-        // The pool contract itself acts as the share token
-        let user_shares: i128 = env.invoke_contract(
+        // Step 1: Get the pool share token address
+        // Aquarius pools have a separate token contract for LP shares
+        let share_token_address: Address = env.invoke_contract(
             &pool_address,
+            &Symbol::new(env, "share_id"),
+            ().into_val(env),
+        );
+
+        // Step 2: Query user's balance of pool share tokens
+        // The share token follows the standard Stellar token interface (SEP-0041)
+        let user_shares: i128 = env.invoke_contract(
+            &share_token_address,
             &Symbol::new(env, "balance"),
             (user_address,).into_val(env),
         );
