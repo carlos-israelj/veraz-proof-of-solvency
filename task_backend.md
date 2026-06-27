@@ -200,14 +200,120 @@ if !cfg.aquarius_pools.is_empty() {
 - Atestaciones se guardan correctamente
 - Sistema E2E listo para pruebas
 
-🚧 **Frontend (UI)**: Actualizado, pendiente testing E2E
-- Contract ID actualizado
-- Ready para probar con Aquarius
+🔴 **Frontend (UI)**: BLOQUEADOR CRÍTICO - Error de Deserialización Persistente
+- ❌ Error "Bad union switch: 4" persiste tras múltiples intentos de resolución
+- ✅ Transacciones se confirman exitosamente on-chain
+- ✅ Atestaciones se guardan correctamente en el ledger
+- ❌ UI muestra error a pesar del éxito on-chain
+- **Ver task_frontend.md sección P1 para detalles completos**
 
-## 8. Documentación Relacionada
+## 8. 🚨 Issue Actual: Error Frontend "Bad union switch: 4"
+
+### 8.1 Descripción del Problema
+**Fecha**: 26 de junio, 2026
+**Estado**: 🔴 BLOQUEADOR CRÍTICO
+
+A pesar de que el backend está completamente funcional, el frontend muestra persistentemente el error "Operación Fallida - Bad union switch: 4" después de que el usuario firma la transacción en Freighter.
+
+### 8.2 Evidencia de Funcionamiento Backend
+- ✅ Transacción confirmada on-chain: Hash verificable en StellarExpert
+- ✅ Atestación guardada correctamente en el ledger
+- ✅ `is_solvent()` retorna datos correctos
+- ✅ Eventos emitidos correctamente
+
+### 8.3 Intentos de Resolución (Todos FALLIDOS)
+
+#### Intento 1: Upgrade de stellar-sdk
+```bash
+npm install --save @stellar/stellar-sdk@14.1.0
+# Auto-upgraded a v14.6.1
+```
+**Resultado**: ❌ Error persiste
+
+#### Intento 2: Limpieza Completa de Cache
+```bash
+rm -rf node_modules/.vite dist .vite
+rm -rf src/lib/contracts/node_modules src/lib/contracts/dist
+cd src/lib/contracts && npm install && npm run build
+```
+**Resultado**: ❌ Error persiste
+
+#### Intento 3: Regeneración de TypeScript Bindings
+```bash
+cd src/lib/contracts && npm run build
+```
+**Resultado**: ❌ Error persiste
+
+#### Intento 4: Múltiples Reinicios del Servidor
+```bash
+pkill -f "vite|npm.*dev"
+npm run dev
+```
+**Resultado**: ❌ Error persiste
+
+### 8.4 Análisis Técnico
+
+El código de `src/lib/stellar.js` **YA IMPLEMENTA** la solución documentada en KECCAK_SDK26_IMPLEMENTATION.md:
+
+```javascript
+// stellar.js líneas 159-162
+// No intentamos deserializar el returnValue porque Result<bool, Error> causa problemas
+// Si llegamos aquí, la transacción fue exitosa
+console.log("✅ Transacción confirmada on-chain:", sent.hash);
+return { hash: sent.hash }; // ← NO se deserializa returnValue
+```
+
+**Conclusión**: El error NO viene de la deserialización explícita del returnValue, sino de otra parte del flujo.
+
+### 8.5 Próximos Pasos de Investigación (Frontend)
+
+Esta investigación debe realizarse del lado del frontend:
+
+1. **Agregar logging granular** para identificar la línea exacta donde ocurre el error
+2. **Verificar si el error ocurre durante**:
+   - `rpc.simulateTransaction()`
+   - `StellarSdk.rpc.assembleTransaction()`
+   - `signTransaction()` (Freighter)
+   - `rpc.sendTransaction()`
+   - `rpc.getTransaction()` (polling)
+
+3. **Considerar workarounds**:
+   - Ignorar el error y hacer polling a `is_solvent()` después del envío
+   - Modificar el contrato para retornar tipo más simple (no Result<bool, Error>)
+   - Usar cliente personalizado en lugar de bindings auto-generados
+
+### 8.6 Posible Solución Backend (Si Workarounds Fallan)
+
+Si todos los intentos frontend fallan, considerar **modificar el contrato**:
+
+```rust
+// ACTUAL (Problemático para stellar-sdk):
+pub fn attest(env: Env, public_inputs: Bytes, proof: Bytes) -> Result<bool, Error> {
+    // ...
+    Ok(true)
+}
+
+// ALTERNATIVA (Más compatible):
+pub fn attest(env: Env, public_inputs: Bytes, proof: Bytes) {
+    // ... validaciones internas
+    // panic!() en caso de error
+    // Sin return value
+}
+```
+
+**Pros**:
+- Elimina el problema de deserialización de Result
+- Frontend solo verifica `status === "SUCCESS"`
+
+**Cons**:
+- Requiere redesplegar contrato
+- Pierde información de retorno estructurada
+
+## 9. Documentación Relacionada
 
 - **BACKEND_RESOLUTION.md**: Resolución detallada del VK mismatch
 - **AQUARIUS_INTEGRATION.md**: Integración completa de Aquarius AMM
-- **task_frontend.md**: Estado y pendientes del frontend
+- **task_frontend.md**: 🔴 Estado y pendientes del frontend (P1: Error crítico)
+- **TASKS.md**: Tareas generales del proyecto
 - **Discord Thread**: Solución SDK 26 + Keccak (referenciada en BACKEND_RESOLUTION.md)
 - **Scripts**: `scripts/query-aquarius-testnet.js` y `scripts/query-aquarius-pools.js`

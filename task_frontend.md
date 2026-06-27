@@ -83,22 +83,68 @@ El deployment inicial tenía un error en la estructura de datos de Soroban:
 
 ### 🚧 Pendientes
 
-#### P1: Resolver Error de Deserialización en UI
-**Estado**: En investigación
-**Descripción**: Aunque las transacciones se confirman exitosamente on-chain y las atestaciones se guardan correctamente, el frontend muestra "Bad union switch: 4" al recibir la respuesta.
+#### P1: Resolver Error de Deserialización en UI - PERSISTENTE
+**Estado**: 🔴 BLOQUEADOR CRÍTICO - Sin resolver tras múltiples intentos
+**Descripción**: Aunque las transacciones se confirman exitosamente on-chain y las atestaciones se guardan correctamente, el frontend muestra "Operación Fallida - Bad union switch: 4" al recibir la respuesta.
 
 **Evidencia de Éxito On-Chain**:
 - ✅ Transacción confirmada: [14124983500423168](https://stellar.expert/explorer/testnet/tx/14124983500423168)
 - ✅ Evento emitido: `Bool(true), U32(3288730)`
 - ✅ Atestación verificable: `is_solvent()` retorna datos correctos
 
-**Diagnóstico Actual**:
-El error ocurre al intentar deserializar el returnValue de tipo `Result<bool, Error>` aunque ya se eliminó esa deserialización en el código. Requiere investigación adicional en el flujo de stellar-sdk.
+**Diagnóstico Detallado**:
+El error ocurre **persistentemente** a pesar de haber implementado todas las soluciones documentadas:
 
-**Posible Workaround**:
-- Verificar que el código actualizado se esté cargando (hard reload)
-- Revisar si hay caché de stellar-sdk
-- Considerar polling a `is_solvent()` en lugar de deserializar returnValue
+1. ✅ **stellar.js ya NO deserializa returnValue** (líneas 159-162):
+   ```javascript
+   // No intentamos deserializar el returnValue porque Result<bool, Error> causa problemas
+   return { hash: sent.hash }; // Solo retorna el hash
+   ```
+
+2. ✅ **SDK actualizado a v14.6.1** (antes v13.0.0):
+   - Ejecutado: `npm install --save @stellar/stellar-sdk@14.1.0`
+   - Auto-upgraded a: v14.6.1
+   - Verificado en package.json y package-lock.json
+
+3. ✅ **Cache completamente limpiado**:
+   ```bash
+   rm -rf node_modules/.vite dist .vite
+   rm -rf src/lib/contracts/node_modules src/lib/contracts/dist src/lib/contracts/.tsbuildinfo
+   cd src/lib/contracts && npm install && npm run build
+   ```
+
+4. ✅ **TypeScript bindings regenerados** con SDK v14
+
+5. ✅ **Servidor reiniciado múltiples veces**
+
+**Resultado**: ❌ Error persiste - "Lo mismo no pasa nada"
+
+**Hipótesis Actuales**:
+- El error puede estar ocurriendo durante `assembleTransaction()` (stellar.js:133)
+- Puede haber un mismatch entre contract spec en bindings vs contrato desplegado
+- El SDK v14 puede tener issues con este tipo específico de Result
+- El error puede venir de otra parte del código (no de la deserialización explícita)
+
+**Próximas Investigaciones Requeridas**:
+1. [ ] **Agregar logging detallado** en stellar.js para identificar línea exacta del error:
+   ```javascript
+   console.log("Pre-simulation...");
+   const sim = await rpc.simulateTransaction(tx);
+   console.log("Post-simulation:", sim);
+
+   console.log("Pre-assembleTransaction...");
+   tx = StellarSdk.rpc.assembleTransaction(tx, sim).build();
+   console.log("Post-assembleTransaction");
+
+   console.log("Pre-signTransaction...");
+   const { signedTxXdr } = await signTransaction(tx.toXDR(), {...});
+   console.log("Post-signTransaction");
+   ```
+
+2. [ ] **Verificar contract spec** - Comparar spec en dist/index.js con contrato desplegado
+3. [ ] **Probar workaround alternativo** - Polling a `is_solvent()` después de enviar TX
+4. [ ] **Revisar stellar-sdk issues** en GitHub para "Bad union switch: 4"
+5. [ ] **Considerar cambio de contrato** - Retornar tipo más simple que Result<bool, Error>
 
 #### P2: UI para Mostrar Hash de Transacción
 **Archivo**: `src/App.jsx` líneas 329-351

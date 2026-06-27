@@ -1,7 +1,35 @@
 # Veraz - Tareas Pendientes para Sistema Funcional End-to-End
 
 **Última actualización**: 26 de junio de 2026
-**Estado actual**: Backend E2E funcional, pendiente fix en frontend UI
+**Estado actual**: 🔴 BLOQUEADOR CRÍTICO - Error frontend persistente
+
+---
+
+## 🚨 BLOQUEADOR CRÍTICO ACTUAL
+
+### Error "Bad union switch: 4" - PERSISTENTE
+
+**Estado**: 🔴 SIN RESOLVER tras múltiples intentos
+**Impacto**: Bloquea UX completa del sistema
+**Descripción**: El frontend muestra "Operación Fallida - Bad union switch: 4" después de que el usuario firma la transacción, **a pesar de que la transacción se confirma exitosamente on-chain**.
+
+#### Evidencia
+- ✅ Backend funcionando correctamente
+- ✅ Transacciones confirmadas en blockchain
+- ✅ Atestaciones guardadas correctamente
+- ❌ UI muestra error al usuario
+
+#### Intentos de Resolución (TODOS FALLIDOS)
+1. ❌ Upgrade stellar-sdk v13 → v14.6.1
+2. ❌ Limpieza completa de cache (Vite, npm, TypeScript)
+3. ❌ Regeneración de TypeScript bindings
+4. ❌ Múltiples reinicios de servidor
+5. ❌ Verificación de código (ya NO deserializa returnValue)
+
+#### Documentación
+- **Detalles técnicos**: task_frontend.md sección P1
+- **Análisis backend**: task_backend.md sección 8
+- **Próximos pasos**: Logging detallado + workarounds
 
 ---
 
@@ -11,7 +39,7 @@ Completar el sistema de Proof of Solvency funcional end-to-end:
 - ✅ Contratos desplegados y configurados (SDK 26 + Keccak)
 - ✅ Frontend genera pruebas ZK correctamente con Keccak oracle hash
 - ✅ Verificación on-chain funcional (atestaciones confirmadas en testnet)
-- 🚧 Pendiente: Fix error de deserialización en UI (transacciones exitosas pero mensaje de error)
+- 🔴 BLOQUEADOR: Fix error de deserialización en UI (ver sección arriba)
 - ⚠️ Documentación actualizada con nuevos contract IDs
 
 ---
