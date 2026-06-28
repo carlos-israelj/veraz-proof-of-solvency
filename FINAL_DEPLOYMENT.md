@@ -1,7 +1,7 @@
 # 🚀 Veraz - FINAL Production Deployment
 
-**Date**: June 23, 2026
-**Status**: ✅ 100% OPERATIONAL - ZERO MOCKS - AQUARIUS INTEGRATED
+**Date**: June 27, 2026
+**Status**: ✅ 100% OPERATIONAL - ZERO MOCKS - DEFINDEX INTEGRATED
 
 ---
 
@@ -12,6 +12,7 @@ Veraz Proof of Solvency system is **fully deployed with ALL real components**:
 ✅ **Real ZK Verification**: UltraHonk verifier on-chain
 ✅ **Real Reserves**: Live XLM balances via SAC
 ✅ **Real Aquarius Integration**: 2 live testnet pools configured
+✅ **Real DeFindex Integration**: 3 live yield vaults configured (NEW!)
 ✅ **All Security Features**: Freshness, anti-replay, overflow protection
 ✅ **Full Test Coverage**: 11/11 tests passing
 
@@ -23,21 +24,20 @@ Veraz Proof of Solvency system is **fully deployed with ALL real components**:
 
 ### Main Contract: Solvency Policy
 
-**Contract ID**: `CD5DKPLYH3XCJ2UP5H456SBZNKVC5E2OL45JJCB4OEQIBWAICC2HABTB`
+**Contract ID**: `CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS`
 
 - Network: Stellar Testnet
-- WASM Size: 8,296 bytes (8.3KB)
-- WASM Hash: `69d88ae7f6671a9fe2bf080b2abc129258d829d2460eb8c1f967c2dab5e426ca`
 - Status: ✅ Initialized and operational
 - Features:
   - ✅ Real UltraHonk verification (cross-contract)
   - ✅ Live reserve reading from blockchain
   - ✅ **Aquarius AMM integration (2 REAL pools)**
+  - ✅ **DeFindex Vaults integration (3 REAL vaults)** 🆕
   - ✅ Freshness window (100 ledgers)
   - ✅ Anti-replay protection
   - ✅ Overflow protection
 
-**Explorer**: [View on Stellar.Expert](https://stellar.expert/explorer/testnet/contract/CD5DKPLYH3XCJ2UP5H456SBZNKVC5E2OL45JJCB4OEQIBWAICC2HABTB)
+**Explorer**: [View on Stellar.Expert](https://stellar.expert/explorer/testnet/contract/CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS)
 
 ---
 
@@ -107,17 +107,74 @@ When `attest()` is called, the contract:
 
 ---
 
+## 🏦 DeFindex Integration (REAL VAULTS) 🆕
+
+### Configured Vaults
+
+DeFindex is a yield aggregation protocol that manages assets across multiple DeFi strategies. Users deposit assets and receive vault shares representing their proportional ownership.
+
+**Vault 1: USDC Vault**
+- Contract: `CBMVK2JK6NTOT2O4HNQAIQFJY232BHKGLIMXDVQVHIIZKDACXDFZDWHN`
+- Asset: USDC
+- TVL: 112.65 USDC
+- Status: ✅ REAL testnet vault
+
+**Vault 2: XLM Vault**
+- Contract: `CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6`
+- Asset: XLM (Native Stellar)
+- TVL: 39,965 XLM
+- Status: ✅ REAL testnet vault
+
+**Vault 3: CETES Vault**
+- Contract: `CBIS5TEMTNNOTBE3WXPQUAGUEDYZZVIWAKTXEQCOUJ34OJJ3FJ5NLF2P`
+- Asset: CETES (Mexican government bonds)
+- TVL: 501 CETES
+- Status: ✅ REAL testnet vault
+
+### How It Works
+
+When `attest()` is called, the contract:
+1. Reads reserves from XLM balance (~9,995 XLM)
+2. Queries pool share balance from Aquarius pools (2 pools)
+3. **Queries vault share balance from DeFindex vaults (3 vaults)** 🆕
+4. **Converts vault shares to underlying asset value using:**
+   - `user_shares = vault.balance(user_address)`
+   - `total_supply = vault.total_supply()`
+   - `total_assets = vault.fetch_total_managed_funds()`
+   - `asset_value = (user_shares × total_assets) / total_supply`
+5. Adds all reserve sources to calculate total reserves
+6. Checks solvency: Total Reserves ≥ Liabilities
+
+**Share-to-Asset Conversion**: The "rule of three" formula ensures accurate valuation even as vault strategies generate yield. If a vault grows from 1M to 1.1M in assets, each share automatically increases in value by 10%.
+
+**Current Vault Balances**: 0 (no deposits yet)
+- When balance = 0, integration has zero overhead ✅
+- To test with real values, deposit assets to DeFindex vaults
+
+### DeFindex Testnet Info
+
+**Factory**: `CDSCWE4GLNBYYTES2OCYDFQA2LLY4RBIAX6ZI32VSUXD7GO6HRPO4A32`
+**Documentation**: https://docs.defindex.io/
+**Integration Time**: "horas, no semanas" (hours, not weeks) ✅
+
+---
+
 ## 🔍 Complete Configuration
 
 ```json
 {
-  "verifier": "CAU5ZPZSJSASGEDMKPBQHL26AFEMH3DQWWTG52Y77L5NWWSECBHJAFKA",
+  "verifier": "CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK",
   "reserve_sac": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
   "reserve_accounts": ["GCXY55U4OBCQSE57LTLQHEALRITRUHO3KIO54LUS3SAMCLDTLGCQJKP2"],
   "freshness_window": 100,
   "aquarius_pools": [
     "CBEPUTV5IJHR75PKITMFDCWTTKEHLWDEUOARPNVIW52A3AHK7OLIFCEK",
     "CDG2O3AM2NKHOWJHCXMOFBI4RL4INYIW3N4YZYI3UOOCEULOJML276BJ"
+  ],
+  "defindex_vaults": [
+    "CBMVK2JK6NTOT2O4HNQAIQFJY232BHKGLIMXDVQVHIIZKDACXDFZDWHN",
+    "CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6",
+    "CBIS5TEMTNNOTBE3WXPQUAGUEDYZZVIWAKTXEQCOUJ34OJJ3FJ5NLF2P"
   ]
 }
 ```
@@ -125,7 +182,7 @@ When `attest()` is called, the contract:
 **Verify Configuration**:
 ```bash
 stellar contract invoke \
-  --id CD5DKPLYH3XCJ2UP5H456SBZNKVC5E2OL45JJCB4OEQIBWAICC2HABTB \
+  --id CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS \
   --source issuer --network testnet -- get_config
 ```
 
@@ -136,7 +193,7 @@ stellar contract invoke \
 ### 1. Check Solvency Status
 ```bash
 stellar contract invoke \
-  --id CD5DKPLYH3XCJ2UP5H456SBZNKVC5E2OL45JJCB4OEQIBWAICC2HABTB \
+  --id CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS \
   --source issuer --network testnet -- is_solvent
 ```
 
@@ -151,14 +208,14 @@ stellar contract invoke \
 ### 3. Verify Verifier VK
 ```bash
 stellar contract invoke \
-  --id CAU5ZPZSJSASGEDMKPBQHL26AFEMH3DQWWTG52Y77L5NWWSECBHJAFKA \
+  --id CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK \
   --source issuer --network testnet -- vk_bytes
 ```
 
-### 4. Check Configuration
+### 4. Check Configuration (includes DeFindex vaults)
 ```bash
 stellar contract invoke \
-  --id CD5DKPLYH3XCJ2UP5H456SBZNKVC5E2OL45JJCB4OEQIBWAICC2HABTB \
+  --id CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS \
   --source issuer --network testnet -- get_config
 ```
 
@@ -167,42 +224,51 @@ stellar contract invoke \
 ## 📊 System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Frontend (React + bb.js)                               │
-│  • Generates REAL UltraHonk ZK proofs                   │
-│  • User enters holder balances                          │
-│  • Proof size: 2-4KB                                    │
-└──────────────────────┬──────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Frontend (React + bb.js)                                    │
+│  • Generates REAL UltraHonk ZK proofs                        │
+│  • User enters holder balances                               │
+│  • Proof size: 2-4KB                                         │
+└──────────────────────┬───────────────────────────────────────┘
                        │
                        ▼
-┌─────────────────────────────────────────────────────────┐
-│  Solvency Policy Contract                               │
-│  CD5DKPLYH3XCJ2UP5H456SBZNKVC5E2OL45JJCB4OEQIBWAICC... │
-│                                                         │
-│  1. Verify freshness (< 100 ledgers)                   │
-│  2. Check anti-replay                                  │
-│  3. ✅ CALL VERIFIER (real crypto verification)        │
-│  4. Read XLM reserves (SAC)                            │
-│  5. ✅ Read Aquarius pool shares (2 pools)             │
-│  6. Calculate total reserves                           │
-│  7. Check R ≥ L (solvency)                             │
-│  8. Store attestation                                  │
-└──────────┬────────────────────────┬─────────────────────┘
-           │                        │
-           ▼                        ▼
-┌────────────────────┐    ┌─────────────────────────┐
-│  UltraHonk         │    │  Aquarius AMM Pools     │
-│  Verifier          │    │  (REAL testnet pools)   │
-│  CAU5ZPZSJ...      │    │                         │
-│                    │    │  Pool 1: XLM/AQUA       │
-│  • Real crypto     │    │  CBEPUTV5...            │
-│  • VK verification │    │                         │
-│  • BN254 curve     │    │  Pool 2: USDC/AQUA      │
-└────────────────────┘    │  CDG2O3AM...            │
-                          │                         │
-                          │  • balance() queries    │
-                          │  • Share token balances │
-                          └─────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Solvency Policy Contract                                    │
+│  CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS  │
+│                                                              │
+│  1. Verify freshness (< 100 ledgers)                        │
+│  2. Check anti-replay                                       │
+│  3. ✅ CALL VERIFIER (real crypto verification)             │
+│  4. Read XLM reserves (SAC) - TIER 1                        │
+│  5. ✅ Read Aquarius pool shares (2 pools) - TIER 2         │
+│  6. ✅ Read DeFindex vault balances (3 vaults) - TIER 3 🆕  │
+│  7. Calculate total reserves (sum all tiers)                │
+│  8. Check R ≥ L (solvency)                                  │
+│  9. Store attestation                                       │
+└───┬────────────────────────┬─────────────────┬──────────────┘
+    │                        │                 │
+    ▼                        ▼                 ▼
+┌──────────────┐  ┌──────────────────┐  ┌─────────────────────┐
+│  UltraHonk   │  │  Aquarius AMM    │  │  DeFindex Vaults    │
+│  Verifier    │  │  (REAL pools)    │  │  (REAL vaults) 🆕   │
+│  CDYOR3Y...  │  │                  │  │                     │
+│              │  │  Pool 1: XLM/    │  │  Vault 1: USDC      │
+│  • Real ZK   │  │  AQUA (CBEPUTV5) │  │  (CBMVK2JK...)      │
+│  • VK verify │  │                  │  │  TVL: 112.65 USDC   │
+│  • BN254     │  │  Pool 2: USDC/   │  │                     │
+└──────────────┘  │  AQUA (CDG2O3AM) │  │  Vault 2: XLM       │
+                  │                  │  │  (CCLV4H7W...)      │
+                  │  • balance()     │  │  TVL: 39,965 XLM    │
+                  │  • Share tokens  │  │                     │
+                  └──────────────────┘  │  Vault 3: CETES     │
+                                        │  (CBIS5TEM...)      │
+                                        │  TVL: 501 CETES     │
+                                        │                     │
+                                        │  • balance()        │
+                                        │  • total_supply()   │
+                                        │  • total_managed    │
+                                        │  • Share conversion │
+                                        └─────────────────────┘
 ```
 
 ---
@@ -213,6 +279,7 @@ stellar contract invoke \
 |-----------|--------------|-------------------|----------------|
 | **ZK Verifier** | MockVerifier | UltraHonk | ✅ DEPLOYED |
 | **Aquarius Pools** | MockPool | 2 Real Pools | ✅ CONFIGURED |
+| **DeFindex Vaults** | Mock | 3 Real Vaults | ✅ CONFIGURED 🆕 |
 | **SAC Tokens** | Real | XLM Native | ✅ LIVE |
 | **Reserve Reading** | Real | Real | ✅ WORKING |
 | **Cross-Contract Calls** | Real | Real | ✅ WORKING |
@@ -236,9 +303,9 @@ export const PRODUCTION_CONFIG = {
   rpcUrl: "https://soroban-testnet.stellar.org",
 
   contracts: {
-    // NEW: Updated contract with Aquarius
-    solvencyPolicy: "CD5DKPLYH3XCJ2UP5H456SBZNKVC5E2OL45JJCB4OEQIBWAICC2HABTB",
-    verifier: "CAU5ZPZSJSASGEDMKPBQHL26AFEMH3DQWWTG52Y77L5NWWSECBHJAFKA",
+    // NEW: Updated contract with Aquarius + DeFindex
+    solvencyPolicy: "CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS",
+    verifier: "CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK",
     reserveSAC: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
   },
 
@@ -254,6 +321,25 @@ export const PRODUCTION_CONFIG = {
       pair: "USDC/AQUA",
       fee: "0.10%"
     }
+  ],
+
+  // DeFindex vaults (optional display) 🆕
+  defindexVaults: [
+    {
+      address: "CBMVK2JK6NTOT2O4HNQAIQFJY232BHKGLIMXDVQVHIIZKDACXDFZDWHN",
+      asset: "USDC",
+      tvl: "112.65 USDC"
+    },
+    {
+      address: "CCLV4H7WTLJQ7ATLHBBQV2WW3OINF3FOY5XZ7VPHZO7NH3D2ZS4GFSF6",
+      asset: "XLM",
+      tvl: "39,965 XLM"
+    },
+    {
+      address: "CBIS5TEMTNNOTBE3WXPQUAGUEDYZZVIWAKTXEQCOUJ34OJJ3FJ5NLF2P",
+      asset: "CETES",
+      tvl: "501 CETES"
+    }
   ]
 };
 ```
@@ -267,7 +353,10 @@ export const PRODUCTION_CONFIG = {
 5. **REAL proof generates** (2-4KB, ~5-10 sec)
 6. Sign transaction
 7. **REAL verification** on-chain
-8. **Reserves include Aquarius pool shares**
+8. **Reserves include ALL sources**:
+   - SAC wallet balances (Tier 1)
+   - Aquarius pool shares (Tier 2)
+   - DeFindex vault balances (Tier 3) 🆕
 9. Attestation stored if solvent
 
 ---
@@ -348,7 +437,7 @@ If you want to test the full flow with actual pool share balances:
 ✅ **Zero-Knowledge Proof System**: Real UltraHonk cryptography
 ✅ **On-Chain Verification**: Real verifier contract
 ✅ **Live Reserve Reading**: Direct from blockchain
-✅ **DeFi Integration**: Real Aquarius AMM pools
+✅ **DeFi Integration**: Real Aquarius AMM pools + DeFindex yield vaults 🆕
 ✅ **Security Features**: Freshness, anti-replay, overflow protection
 ✅ **Full Test Coverage**: 11/11 tests passing
 ✅ **Production Ready**: Deployed on testnet
@@ -358,6 +447,7 @@ If you want to test the full flow with actual pool share balances:
 **Can Attest Reserves From**:
 - ✅ Direct account holdings (XLM, USDC, etc)
 - ✅ Aquarius liquidity pool shares
+- ✅ DeFindex yield vault balances 🆕
 - ✅ Multiple accounts
 - ✅ Multiple pools
 

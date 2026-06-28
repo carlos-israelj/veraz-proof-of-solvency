@@ -28,7 +28,7 @@ Se habilitó la integración con Aquarius AMM en **Stellar Testnet**, permitiend
 | Componente | Contract ID | Estado |
 |------------|-------------|--------|
 | **Verifier** | \`CDYOR3YHANB63YUBUA3H3NGVZH6JGSNJC3ZKTAHG7IYSAIMGHMHLBDWK\` | ✅ SDK 26 + Keccak |
-| **SolvencyPolicy** | \`CDPMSYQ3HRBL4YFEI5HPQOHEVGSHKJ4KAE3OTUGAVTAJ2OC3B2BZ3VW5\` | ✅ Con Aquarius |
+| **SolvencyPolicy** | \`CA7I4Y2BPQAE7WCBCS3GWAPGKLBJPEPT2JLJKYHB4BNGTTCTNF2GWRK6\` | ✅ Con Aquarius + Breakdown Real |
 | **Reserve SAC (USDC)** | \`CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC\` | ✅ Activo |
 | **Aquarius Pool** | \`CCGFVAHVN4XGY2SKWNCLBMIJ6EPT3FELLMIBQMVTC2DNVX3HPBA23OMU\` | ✅ USDC/XLM |
 

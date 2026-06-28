@@ -56,6 +56,8 @@
     [],
     [],
     [],
+    [],
+    [],
     []
   ],
   "ledger": {
@@ -240,6 +242,18 @@
                             }
                           ]
                         }
+                      },
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "ShareTokenAddress"
+                            }
+                          ]
+                        },
+                        "val": {
+                          "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
+                        }
                       }
                     ]
                   }
@@ -297,6 +311,18 @@
                             }
                           ]
                         }
+                      },
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "ShareTokenAddress"
+                            }
+                          ]
+                        },
+                        "val": {
+                          "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM"
+                        }
                       }
                     ]
                   }
@@ -343,6 +369,17 @@
                           "map": [
                             {
                               "key": {
+                                "symbol": "aquarius_balance"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 350000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
                                 "symbol": "ledger_seq"
                               },
                               "val": {
@@ -368,6 +405,17 @@
                                 "i128": {
                                   "hi": 0,
                                   "lo": 1350000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "sac_balance"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 1000000
                                 }
                               }
                             },

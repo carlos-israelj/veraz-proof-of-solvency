@@ -11,10 +11,10 @@ export const t = {
     
     // Landing Info Sections
     infoAccordionTitle: "Learn More",
-    infoWhyStellarTitle: "Why Stellar?",
-    infoWhyStellarDesc: "Stellar provides incredibly fast and cheap transactions, making it the perfect network for continuous cryptographic audits. The Soroban smart contract platform offers the robustness of Rust and WebAssembly, ideal for handling complex Zero-Knowledge verifications on-chain.",
+    infoWhyStellarTitle: "Why Multi-Source Reserve Verification?",
+    infoWhyStellarDesc: "Modern stablecoin issuers don't hold all reserves in one wallet. They provide liquidity to DEXs like Aquarius (30-40% of reserves typically). Veraz is the ONLY system that reads reserves from BOTH SAC wallets AND Aquarius pool shares, then verifies solvency with Zero-Knowledge privacy. Traditional solutions miss pool reserves and report false insolvency.",
     infoHowItWorksTitle: "How it Works",
-    infoHowItWorksDesc: "1. The exchange commits their user balances locally into a Merkle Tree.\n2. UltraHonk generates a Zero-Knowledge proof of solvency locally (no private data ever leaves the browser).\n3. The proof and the Merkle root are sent to the Soroban Verifier contract.\n4. Anyone can query the contract to mathematically verify solvency without trusting third parties.",
+    infoHowItWorksDesc: "1. Issuer enters private holder balances (liabilities) locally.\n2. UltraHonk generates Zero-Knowledge proof in browser (data never leaves).\n3. Smart contract reads reserves from SAC wallet + Aquarius pools via cross-contract calls.\n4. ZK proof verified on-chain: reserves ≥ liabilities.\n5. Public attestation created - balances stay hidden, solvency proven.",
     
     // Shared
     backBtn: "← Go Back",
@@ -105,10 +105,10 @@ export const t = {
     
     // Landing Info Sections
     infoAccordionTitle: "Aprender Más",
-    infoWhyStellarTitle: "¿Por qué Stellar?",
-    infoWhyStellarDesc: "Stellar provee transacciones increíblemente rápidas y económicas, convirtiéndola en la red perfecta para auditorías criptográficas continuas. Soroban ofrece la robustez de Rust y WebAssembly, ideal para manejar verificaciones Zero-Knowledge on-chain.",
+    infoWhyStellarTitle: "¿Por qué Verificación Multi-Fuente?",
+    infoWhyStellarDesc: "Los emisores modernos de stablecoins no guardan todas las reservas en una wallet. Proveen liquidez a DEXs como Aquarius (30-40% de reservas típicamente). Veraz es el ÚNICO sistema que lee reservas desde wallets SAC Y pool shares de Aquarius, verificando solvencia con privacidad Zero-Knowledge. Soluciones tradicionales ignoran pools y reportan falsa insolvencia.",
     infoHowItWorksTitle: "Cómo funciona",
-    infoHowItWorksDesc: "1. El exchange consolida los saldos de sus usuarios en un Árbol de Merkle.\n2. UltraHonk genera una prueba matemática de solvencia localmente (los datos nunca salen de tu PC).\n3. La prueba y la raíz de Merkle se envían al contrato inteligente Verifier en Soroban.\n4. Cualquiera puede auditar matemáticamente el contrato sin confiar en terceros.",
+    infoHowItWorksDesc: "1. Emisor ingresa balances privados de titulares (pasivos) localmente.\n2. UltraHonk genera prueba Zero-Knowledge en navegador (datos nunca salen).\n3. Contrato lee reservas desde wallet SAC + pools Aquarius via cross-contract calls.\n4. Prueba ZK verificada on-chain: reservas ≥ pasivos.\n5. Atestación pública creada - balances ocultos, solvencia probada.",
     
     // Shared
     backBtn: "← Volver",

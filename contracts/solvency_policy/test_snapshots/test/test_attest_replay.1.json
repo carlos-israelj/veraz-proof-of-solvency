@@ -225,6 +225,17 @@
                           "map": [
                             {
                               "key": {
+                                "symbol": "aquarius_balance"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 0
+                                }
+                              }
+                            },
+                            {
+                              "key": {
                                 "symbol": "ledger_seq"
                               },
                               "val": {
@@ -245,6 +256,17 @@
                             {
                               "key": {
                                 "symbol": "reserves"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 1000000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "sac_balance"
                               },
                               "val": {
                                 "i128": {

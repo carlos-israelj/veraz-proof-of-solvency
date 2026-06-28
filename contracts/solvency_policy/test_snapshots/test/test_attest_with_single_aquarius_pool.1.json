@@ -54,6 +54,7 @@
     [],
     [],
     [],
+    [],
     []
   ],
   "ledger": {
@@ -238,6 +239,18 @@
                             }
                           ]
                         }
+                      },
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "ShareTokenAddress"
+                            }
+                          ]
+                        },
+                        "val": {
+                          "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
+                        }
                       }
                     ]
                   }
@@ -284,6 +297,17 @@
                           "map": [
                             {
                               "key": {
+                                "symbol": "aquarius_balance"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 300000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
                                 "symbol": "ledger_seq"
                               },
                               "val": {
@@ -309,6 +333,17 @@
                                 "i128": {
                                   "hi": 0,
                                   "lo": 1300000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "sac_balance"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 1000000
                                 }
                               }
                             },

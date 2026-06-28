@@ -379,6 +379,9 @@ fn test_attest_with_single_aquarius_pool() {
     let pool_id = env.register(MockPool, ());
     let pool_client = MockPoolClient::new(&env, &pool_id);
 
+    // Configure pool to return itself as share token (simplified for testing)
+    pool_client.set_share_token(&pool_id);
+
     // El reserve_account tiene 300,000 pool shares en esta pool
     pool_client.set_balance(&reserve_account, &300_000);
 
@@ -433,10 +436,12 @@ fn test_attest_with_multiple_aquarius_pools() {
     // Crear dos mock pools
     let pool1_id = env.register(MockPool, ());
     let pool1_client = MockPoolClient::new(&env, &pool1_id);
+    pool1_client.set_share_token(&pool1_id);
     pool1_client.set_balance(&reserve_account, &200_000);
 
     let pool2_id = env.register(MockPool, ());
     let pool2_client = MockPoolClient::new(&env, &pool2_id);
+    pool2_client.set_share_token(&pool2_id);
     pool2_client.set_balance(&reserve_account, &150_000);
 
     let contract_id = env.register(SolvencyPolicy, ());
@@ -506,6 +511,7 @@ fn test_attest_insolvent_without_pools_but_solvent_with_pools() {
     // Crear pool con 250,000 pool shares
     let pool_id = env.register(MockPool, ());
     let pool_client = MockPoolClient::new(&env, &pool_id);
+    pool_client.set_share_token(&pool_id);
     pool_client.set_balance(&reserve_account, &250_000);
 
     let contract_id = env.register(SolvencyPolicy, ());
