@@ -236,6 +236,17 @@
                             },
                             {
                               "key": {
+                                "symbol": "defindex_balance"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 0
+                                }
+                              }
+                            },
+                            {
+                              "key": {
                                 "symbol": "ledger_seq"
                               },
                               "val": {
@@ -307,6 +318,14 @@
                             {
                               "key": {
                                 "symbol": "aquarius_pools"
+                              },
+                              "val": {
+                                "vec": []
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "defindex_vaults"
                               },
                               "val": {
                                 "vec": []

@@ -380,6 +380,17 @@
                             },
                             {
                               "key": {
+                                "symbol": "defindex_balance"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 0
+                                }
+                              }
+                            },
+                            {
+                              "key": {
                                 "symbol": "ledger_seq"
                               },
                               "val": {
@@ -461,6 +472,14 @@
                                     "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM"
                                   }
                                 ]
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "defindex_vaults"
+                              },
+                              "val": {
+                                "vec": []
                               }
                             },
                             {

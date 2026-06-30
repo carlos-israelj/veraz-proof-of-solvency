@@ -1,9 +1,9 @@
 # Inputs de ejemplo para `nargo execute`.
 # `total_liabilities` = suma de `balances` = 400000.
-# `root` es un PLACEHOLDER: debe calcularse con la misma Poseidon2 (lo hace el builder
-# del Módulo 1, o `nargo` al ejecutar el test). Reemplazar tras derivarla.
+# `root` calculado usando Pedersen hash (Noir test output)
+# Calculated: 28 June 2026
 
-root = "0x0000000000000000000000000000000000000000000000000000000000000000"
+root = "0x0fa83f8ac7ec78d7338a9f6777307cb4aa21ce6a94ffecfc3378453ac3e08523"
 total_liabilities = "400000"
 ledger_seq = "58204113"
 

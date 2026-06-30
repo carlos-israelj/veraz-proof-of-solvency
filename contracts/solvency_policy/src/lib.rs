@@ -294,4 +294,6 @@ mod mock_verifier;
 #[cfg(test)]
 mod mock_pool;
 #[cfg(test)]
+mod mock_vault;
+#[cfg(test)]
 mod test;

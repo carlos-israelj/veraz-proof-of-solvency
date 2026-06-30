@@ -232,6 +232,14 @@
                             },
                             {
                               "key": {
+                                "symbol": "defindex_vaults"
+                              },
+                              "val": {
+                                "vec": []
+                              }
+                            },
+                            {
+                              "key": {
                                 "symbol": "freshness_window"
                               },
                               "val": {
@@ -545,6 +553,12 @@
                   "i128": {
                     "hi": 0,
                     "lo": 1000000
+                  }
+                },
+                {
+                  "i128": {
+                    "hi": 0,
+                    "lo": 0
                   }
                 },
                 {
