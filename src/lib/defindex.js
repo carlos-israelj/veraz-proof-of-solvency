@@ -3,8 +3,9 @@
  * Fetches live vault data from DeFindex protocol
  */
 
-const STELLAR_SDK = await import('@stellar/stellar-sdk');
-const { Contract, SorobanRpc, TransactionBuilder, Networks, BASE_FEE } = STELLAR_SDK;
+import * as StellarSdk from '@stellar/stellar-sdk';
+
+const { Contract, SorobanRpc, TransactionBuilder, Networks, BASE_FEE, nativeToScVal } = StellarSdk;
 
 const RPC_URL = 'https://soroban-testnet.stellar.org';
 const server = new SorobanRpc.Server(RPC_URL);
@@ -154,7 +155,7 @@ export async function fetchUserVaultBalance(vaultId, userAddress) {
       'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF'
     );
 
-    const userParam = STELLAR_SDK.nativeToScVal(userAddress, { type: 'address' });
+    const userParam = nativeToScVal(userAddress, { type: 'address' });
 
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
@@ -198,8 +199,8 @@ export async function depositToVault({ vaultId, amount, userAddress, signTransac
     const account = await server.getAccount(userAddress);
 
     // Build deposit transaction
-    const amountParam = STELLAR_SDK.nativeToScVal(amount, { type: 'i128' });
-    const userParam = STELLAR_SDK.nativeToScVal(userAddress, { type: 'address' });
+    const amountParam = nativeToScVal(amount, { type: 'i128' });
+    const userParam = nativeToScVal(userAddress, { type: 'address' });
 
     const tx = new TransactionBuilder(account, {
       fee: BASE_FEE,
