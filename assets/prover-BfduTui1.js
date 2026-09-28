@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./merkle-DVgy2hN0.js","./index-Cdar6KzS.js","./index-COJHz5cE.css"])))=>i.map(i=>d[i]);
-import { _ as si, __tla as __tla_0 } from "./index-Cdar6KzS.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./merkle-aLi99pP7.js","./index-DjYPvHWm.js","./index-Bq9EeRCq.css"])))=>i.map(i=>d[i]);
+import { _ as si, __tla as __tla_0 } from "./index-DjYPvHWm.js";
 let Bi, K, a1;
 let __tla = Promise.all([
     (()=>{
@@ -8519,7 +8519,7 @@ fn test_well_formed_tree_sums() {
         if (t.length !== Os) throw new Error(`El circuito requiere exactamente ${Os} balances. Recibidos: ${t.length}.`);
         console.log("🌳 Calculando Merkle sum-tree...");
         const { buildMerkleTree: r } = await si(async ()=>{
-            const { buildMerkleTree: p } = await import("./merkle-DVgy2hN0.js");
+            const { buildMerkleTree: p } = await import("./merkle-aLi99pP7.js");
             return {
                 buildMerkleTree: p
             };
