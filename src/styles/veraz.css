@@ -1,0 +1,569 @@
+/* ============================================
+   VERAZ - Professional Design System v1.3
+   Zero-Knowledge Proof of Solvency for Stellar
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('./veraz-tokens.css');
+@import url('./flows.css');
+
+/* ============================================
+   BASE & RESET
+   ============================================ */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  font-family: var(--vz-font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--vz-text);
+  background: var(--vz-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--vz-text);
+}
+
+h1 {
+  font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
+  font-weight: 600;
+}
+
+p {
+  line-height: 1.6;
+  color: var(--vz-text);
+}
+
+a {
+  color: var(--vz-primary);
+  text-decoration: none;
+  transition: color var(--vz-transition-fast);
+}
+
+a:hover {
+  color: var(--vz-secondary);
+}
+
+code, pre, .vz-mono {
+  font-family: var(--vz-font-mono);
+  font-size: 0.93em;
+}
+
+/* Typography Utilities */
+.vz-display {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.vz-h1 {
+  font-weight: 600;
+  font-size: 40px;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.vz-h2 {
+  font-weight: 600;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.vz-label {
+  font-family: var(--vz-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vz-text-2);
+}
+
+.vz-ratio {
+  font-weight: 600;
+  font-size: clamp(48px, 10vw, 96px);
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--vz-space-md);
+}
+
+.section {
+  padding: var(--vz-space-2xl) 0;
+}
+
+.grid {
+  display: grid;
+  gap: var(--vz-space-md);
+}
+
+.flex {
+  display: flex;
+  gap: var(--vz-space-md);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   LOGO & LOCKUP
+   ============================================ */
+
+.vz-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  color: inherit;
+  text-decoration: none;
+  transition: opacity var(--vz-transition-fast);
+}
+
+.vz-lockup:hover {
+  opacity: 0.85;
+}
+
+.vz-wordmark {
+  font-family: var(--vz-font-sans);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 1.45em;
+  line-height: 1;
+}
+
+.vz-symbol {
+  flex-shrink: 0;
+}
+
+/* ============================================
+   CARDS & SURFACES
+   ============================================ */
+
+.vz-card {
+  background: var(--vz-surface);
+  border: 1px solid var(--vz-border);
+  border-radius: var(--vz-radius-lg);
+  padding: var(--vz-space-lg);
+  transition: all var(--vz-transition-base);
+}
+
+.vz-card:hover {
+  box-shadow: var(--vz-shadow-md);
+}
+
+.vz-card-interactive {
+  cursor: pointer;
+  border-width: 2px;
+}
+
+.vz-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--vz-primary);
+  box-shadow: var(--vz-shadow-lg);
+}
+
+.vz-card-interactive:active {
+  transform: translateY(0);
+}
+
+.vz-hr {
+  border: 0;
+  border-top: 1px solid var(--vz-border);
+  margin: var(--vz-space-md) 0;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.vz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: var(--vz-radius-md);
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--vz-transition-base);
+  text-decoration: none;
+}
+
+.vz-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.vz-btn-primary {
+  background: var(--vz-primary);
+  color: #fff;
+}
+
+[data-theme="dark"] .vz-btn-primary {
+  color: var(--vz-bg);
+}
+
+.vz-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: var(--vz-shadow-md);
+}
+
+.vz-btn-secondary {
+  background: transparent;
+  color: var(--vz-text);
+  border-color: var(--vz-border);
+}
+
+.vz-btn-secondary:hover:not(:disabled) {
+  border-color: var(--vz-primary);
+  color: var(--vz-primary);
+}
+
+.vz-btn-ghost {
+  background: transparent;
+  color: var(--vz-text-2);
+  border: none;
+}
+
+.vz-btn-ghost:hover:not(:disabled) {
+  color: var(--vz-text);
+}
+
+/* ============================================
+   STATUS INDICATORS
+   ============================================ */
+
+.vz-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.vz-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.9); }
+}
+
+.vz-status-solvent {
+  color: var(--vz-solvent);
+}
+
+.vz-status-insolvent {
+  color: var(--vz-insolvent);
+}
+
+.vz-status-stale {
+  color: var(--vz-stale);
+}
+
+.vz-status-verified {
+  color: var(--vz-proof-verified);
+}
+
+.vz-status-pending {
+  color: var(--vz-proof-pending);
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.vz-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid currentColor;
+  border-radius: var(--vz-radius-full);
+  font-family: var(--vz-font-mono);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+
+.vz-progress {
+  height: 6px;
+  border-radius: var(--vz-radius-sm);
+  background: var(--vz-border);
+  overflow: hidden;
+  position: relative;
+}
+
+.vz-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--vz-proof-pending);
+  transition: width var(--vz-transition-slow);
+}
+
+.vz-progress.is-done > span {
+  background: var(--vz-proof-verified);
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+.vz-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--vz-font-mono);
+  font-size: 13px;
+}
+
+.vz-table td,
+.vz-table th {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--vz-border);
+  text-align: left;
+}
+
+.vz-table td.num,
+.vz-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.vz-table th {
+  font-weight: 600;
+  color: var(--vz-text-2);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   INPUTS
+   ============================================ */
+
+.vz-input {
+  font-family: var(--vz-font-mono);
+  font-size: 14px;
+  padding: var(--vz-space-sm) var(--vz-space-md);
+  background: var(--vz-surface);
+  border: 2px solid var(--vz-border);
+  border-radius: var(--vz-radius-md);
+  color: var(--vz-text);
+  transition: all var(--vz-transition-base);
+  width: 100%;
+}
+
+.vz-input:focus {
+  outline: none;
+  border-color: var(--vz-primary);
+  box-shadow: 0 0 0 3px hsl(var(--vz-primary-hsl) / 0.15);
+}
+
+.vz-input::placeholder {
+  color: var(--vz-text-2);
+}
+
+textarea.vz-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+.mt-xs { margin-top: var(--vz-space-xs); }
+.mt-sm { margin-top: var(--vz-space-sm); }
+.mt-md { margin-top: var(--vz-space-md); }
+.mt-lg { margin-top: var(--vz-space-lg); }
+.mt-xl { margin-top: var(--vz-space-xl); }
+
+.mb-xs { margin-bottom: var(--vz-space-xs); }
+.mb-sm { margin-bottom: var(--vz-space-sm); }
+.mb-md { margin-bottom: var(--vz-space-md); }
+.mb-lg { margin-bottom: var(--vz-space-lg); }
+.mb-xl { margin-bottom: var(--vz-space-xl); }
+
+.opacity-50 { opacity: 0.5; }
+.opacity-70 { opacity: 0.7; }
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn var(--vz-transition-slow);
+}
+
+.animate-slideUp {
+  animation: slideUp var(--vz-transition-slow);
+}
+
+.animate-scaleIn {
+  animation: scaleIn var(--vz-transition-slow);
+}
+
+/* Stagger delays */
+.stagger-1 { animation-delay: 100ms; }
+.stagger-2 { animation-delay: 200ms; }
+.stagger-3 { animation-delay: 300ms; }
+.stagger-4 { animation-delay: 400ms; }
+.stagger-5 { animation-delay: 500ms; }
+.stagger-6 { animation-delay: 600ms; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--vz-space-sm);
+  }
+
+  .section {
+    padding: var(--vz-space-xl) 0;
+  }
+
+  .vz-ratio {
+    font-size: clamp(36px, 8vw, 64px);
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .vz-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--vz-primary);
+  outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: var(--vz-primary);
+  color: white;
+  padding: var(--vz-space-sm) var(--vz-space-md);
+  z-index: 100;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}

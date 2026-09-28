@@ -1,0 +1,17 @@
+======================================
+VERAZ TESTNET DEPLOYMENT
+DeFindex Multi-Source Integration
+======================================
+
+Step 1: Building contract...
+Building from: /mnt/c/Users/CarlosIsraelJiménezJ/Documents/Stellar/Veraz
+error: could not find `Cargo.toml` in `/mnt/c/Users/CarlosIsraelJiménezJ/Documents/Stellar/Veraz` or any parent directory
+✅ WASM found: contracts/solvency_policy/target/wasm32-unknown-unknown/release/solvency_policy.wasm
+   Size: 11K
+
+Step 2: Optimizing contract...
+Reading: contracts/solvency_policy/target/wasm32-unknown-unknown/release/solvency_policy.wasm (10907 bytes)
+Optimized: contracts/solvency_policy/target/wasm32-unknown-unknown/release/solvency_policy.optimized.wasm (9497 bytes)
+
+Step 3: Installing WASM on testnet...
+❌ Failed to install WASM

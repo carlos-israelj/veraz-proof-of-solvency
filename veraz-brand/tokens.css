@@ -1,0 +1,17 @@
+:root{
+  /* Marca · índigo = UI (botones, enlaces); nunca en símbolo ni tile */
+  --vz-primary:#3E4FB5; --vz-primary-hsl:231 49% 48%;
+  --vz-secondary:#0E7C63; --vz-secondary-hsl:166 80% 27%;
+  /* Semánticos */
+  --vz-solvent:#0E7C63; --vz-insolvent:#B23A3A; --vz-stale:#65706B; --vz-proof-verified:#2F6FB8; --vz-proof-pending:#8A6A00;
+  /* Neutros claro */
+  --vz-bg:#F4F6F5; --vz-surface:#FFFFFF; --vz-border:#D6DBD8; --vz-text-2:#5C6661; --vz-text:#101312;
+  /* Tipografía */
+  --vz-font-sans:"Geist",system-ui,sans-serif; --vz-font-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+[data-theme="dark"]{
+  --vz-primary:#A6B2F5; --vz-primary-hsl:231 80% 81%;
+  --vz-secondary:#3FD9AD; --vz-secondary-hsl:163 67% 55%;
+  --vz-solvent:#3FD9AD; --vz-insolvent:#F08A80; --vz-stale:#94A09B; --vz-proof-verified:#82B6F2; --vz-proof-pending:#E0B84A;
+  --vz-bg:#0B0F0E; --vz-surface:#141918; --vz-border:#262C29; --vz-text-2:#9AA39F; --vz-text:#F4F5F3;
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import SolvencyReport from './SolvencyReport';
+import AttestationCard from './AttestationCard';
 
 const DEFAULT_CONTRACT = 'CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS';
 
@@ -42,28 +42,26 @@ export default function AuditorFlow({ onBack }) {
     <div className="auditor-flow">
       {/* Header */}
       <div className="flow-header">
-        <button className="btn-ghost" onClick={onBack}>
+        <button className="vz-btn vz-btn-ghost" onClick={onBack}>
           ← Back
         </button>
-        <h1 className="flow-title">
-          <span className="text-gradient">AUDITOR</span>
-        </h1>
-        <p className="flow-subtitle mono">Solvency Verification</p>
+        <h1 className="flow-title">AUDITOR</h1>
+        <p className="flow-subtitle vz-mono">Solvency Verification</p>
       </div>
 
       {/* Search Bar */}
       <div className="search-section animate-slideUp">
-        <div className="search-container card">
-          <div className="search-label mono">CONTRACT ADDRESS</div>
+        <div className="search-container vz-card">
+          <div className="search-label vz-label">CONTRACT ADDRESS</div>
           <div className="search-input-group">
             <input
-              className="input search-input mono"
+              className="vz-input search-input vz-mono"
               value={contractId}
               onChange={(e) => setContractId(e.target.value)}
               placeholder="C..."
             />
             <button
-              className="btn btn-primary"
+              className="vz-btn vz-btn-primary"
               onClick={queryAttestation}
               disabled={loading || !contractId.trim()}
             >
@@ -76,7 +74,7 @@ export default function AuditorFlow({ onBack }) {
               )}
             </button>
           </div>
-          <div className="search-hint mono">
+          <div className="search-hint vz-mono">
             Query solvency proofs from deployed policy contracts
           </div>
         </div>
@@ -97,7 +95,7 @@ export default function AuditorFlow({ onBack }) {
           <div className="loading-scanner">
             <div className="spinner" style={{ width: '60px', height: '60px' }}></div>
           </div>
-          <p className="loading-text mono">Querying blockchain...</p>
+          <p className="loading-text vz-mono">Querying blockchain...</p>
           <div className="loading-details">
             <div className="loading-step">→ Reading contract state</div>
             <div className="loading-step">→ Fetching reserve balances</div>
@@ -106,9 +104,11 @@ export default function AuditorFlow({ onBack }) {
         </div>
       )}
 
-      {/* Solvency Report */}
+      {/* Attestation Card */}
       {!loading && attestation && (
-        <SolvencyReport attestation={attestation} />
+        <div className="animate-slideUp">
+          <AttestationCard attestation={attestation} />
+        </div>
       )}
 
       {/* Empty State */}

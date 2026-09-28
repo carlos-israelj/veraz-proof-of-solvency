@@ -119,7 +119,7 @@ export default function DepositModal({ isOpen, onClose, selectedVault }) {
                 Connect your Freighter wallet to deposit
               </p>
               <button
-                className="btn btn-primary w-full"
+                className="vz-btn btn-primary w-full"
                 onClick={connectWallet}
                 disabled={isConnecting}
               >
@@ -173,7 +173,7 @@ export default function DepositModal({ isOpen, onClose, selectedVault }) {
               )}
 
               <button
-                className="btn btn-primary w-full"
+                className="vz-btn btn-primary w-full"
                 onClick={handleDeposit}
                 disabled={isDepositing || !amount}
               >
@@ -210,7 +210,7 @@ export default function DepositModal({ isOpen, onClose, selectedVault }) {
               )}
 
               <button
-                className="btn btn-secondary w-full"
+                className="vz-btn btn-secondary w-full"
                 onClick={onClose}
               >
                 Close

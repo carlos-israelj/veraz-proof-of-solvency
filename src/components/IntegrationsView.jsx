@@ -182,7 +182,7 @@ for vault in vaults {
                   href="https://docs.defindex.io/"
                   target="_blank"
                   rel="noreferrer"
-                  className="btn btn-secondary"
+                  className="vz-btn btn-secondary"
                 >
                   View DeFindex Docs →
                 </a>
@@ -226,7 +226,7 @@ for pool in pools {
                   href="https://docs.aqua.network/"
                   target="_blank"
                   rel="noreferrer"
-                  className="btn btn-secondary"
+                  className="vz-btn btn-secondary"
                 >
                   View Aquarius Docs →
                 </a>
@@ -304,7 +304,7 @@ for pool in pools {
 
                     <div className="vault-actions">
                       <button
-                        className="btn btn-primary btn-small"
+                        className="vz-btn btn-primary btn-small"
                         onClick={() => openDepositModal(vault)}
                       >
                         Deposit {vault.asset}
@@ -313,7 +313,7 @@ for pool in pools {
                         href={`https://stellar.expert/explorer/testnet/contract/${vault.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn btn-ghost btn-small"
+                        className="vz-btn btn-ghost btn-small"
                       >
                         View on Stellar.Expert →
                       </a>
@@ -387,7 +387,7 @@ for pool in pools {
                     </div>
                   </div>
 
-                  <button className="btn btn-ghost btn-small">
+                  <button className="vz-btn btn-ghost btn-small">
                     View on Aquarius →
                   </button>
                 </div>

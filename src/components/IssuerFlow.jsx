@@ -51,13 +51,11 @@ export default function IssuerFlow({ onBack }) {
     <div className="issuer-flow">
       {/* Header */}
       <div className="flow-header">
-        <button className="btn-ghost" onClick={onBack}>
+        <button className="vz-btn vz-btn-ghost" onClick={onBack}>
           ← Back
         </button>
-        <h1 className="flow-title">
-          <span className="text-gradient">ISSUER</span>
-        </h1>
-        <p className="flow-subtitle mono">Zero-Knowledge Attestation</p>
+        <h1 className="flow-title">ISSUER</h1>
+        <p className="flow-subtitle vz-mono">Zero-Knowledge Attestation</p>
       </div>
 
       {/* Progress Indicators */}
@@ -96,7 +94,7 @@ export default function IssuerFlow({ onBack }) {
       <div className="flow-content">
         {/* Step 0: Connect Wallet */}
         {step === 0 && (
-          <div className="card step-card animate-scaleIn">
+          <div className="vz-card step-card animate-scaleIn">
             <div className="step-icon">
               <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                 <rect x="12" y="20" width="40" height="28" rx="4" stroke="currentColor" strokeWidth="2"/>
@@ -109,7 +107,7 @@ export default function IssuerFlow({ onBack }) {
               Sign transactions using your preferred Stellar wallet (Freighter, xBull, Lobstr, etc.).
               Your private keys never leave your wallet extension.
             </p>
-            <button className="btn btn-primary" onClick={handleConnectWallet}>
+            <button className="vz-btn vz-btn-primary" onClick={handleConnectWallet}>
               Connect Wallet
             </button>
           </div>
@@ -119,10 +117,10 @@ export default function IssuerFlow({ onBack }) {
         {step === 1 && (
           <div className="input-section animate-fadeIn">
             {/* Connected Address */}
-            <div className="card connected-card">
+            <div className="vz-card connected-card">
               <div className="connected-header">
                 <span className="status-dot"></span>
-                <span className="mono">Wallet Connected</span>
+                <span className="vz-mono">Wallet Connected</span>
                 <button
                   className="btn-disconnect"
                   onClick={() => {
@@ -140,7 +138,7 @@ export default function IssuerFlow({ onBack }) {
             </div>
 
             {/* Multi-Source Info */}
-            <div className="card info-card">
+            <div className="vz-card info-card">
               <h3>🌊 Multi-Source Reserve System</h3>
               <p className="info-text">
                 Veraz verifies solvency by aggregating reserves from multiple sources:
@@ -165,7 +163,7 @@ export default function IssuerFlow({ onBack }) {
             </div>
 
             {/* Balance Input */}
-            <div className="card input-card">
+            <div className="vz-card input-card">
               <div className="input-header">
                 <h3>Token Holder Liabilities</h3>
                 <span className="info-badge" title="Total amount owed to token holders">ℹ️</span>
@@ -213,7 +211,7 @@ export default function IssuerFlow({ onBack }) {
               </label>
 
               <textarea
-                className="input balance-input mono"
+                className="vz-input balance-input mono"
                 value={balances}
                 onChange={(e) => setBalances(e.target.value)}
                 placeholder="100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000"
@@ -233,7 +231,7 @@ export default function IssuerFlow({ onBack }) {
             <div className="card">
               <h3>Solvency Policy Contract</h3>
               <input
-                className="input mono"
+                className="vz-input mono"
                 value={contractId}
                 onChange={(e) => setContractId(e.target.value)}
                 placeholder="Contract ID"
@@ -242,7 +240,7 @@ export default function IssuerFlow({ onBack }) {
 
             {/* Generate Button */}
             <button
-              className="btn btn-primary btn-large"
+              className="vz-btn vz-btn-primary btn-large"
               onClick={startProofGeneration}
               disabled={count !== N || !contractId}
             >
@@ -264,7 +262,7 @@ export default function IssuerFlow({ onBack }) {
 
         {/* Step 3: Success */}
         {step === 3 && txHash && (
-          <div className="card success-card animate-scaleIn">
+          <div className="vz-card success-card animate-scaleIn">
             <ShieldAnimation onComplete={() => {}} />
             <h2 className="text-gradient">Proof Verified On-Chain</h2>
             <p className="success-message">
@@ -286,10 +284,10 @@ export default function IssuerFlow({ onBack }) {
             </div>
 
             <div className="success-actions">
-              <button className="btn btn-secondary" onClick={() => setStep(1)}>
+              <button className="vz-btn vz-btn-secondary" onClick={() => setStep(1)}>
                 Generate Another
               </button>
-              <button className="btn btn-ghost" onClick={onBack}>
+              <button className="vz-btn vz-btn-ghost" onClick={onBack}>
                 Back to Home
               </button>
             </div>

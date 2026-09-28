@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{margin:0}
+.og{width:1200px;height:630px;box-sizing:border-box;background:#0B0F0E;color:#F4F5F3;padding:56px 64px;display:flex;flex-direction:column;justify-content:space-between;font-family:Geist,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.top{display:flex;justify-content:space-between;align-items:center}.lock{display:flex;align-items:center;gap:14px}.wm{font-weight:500;font-size:34px;letter-spacing:-.03em}
+.lbl{font-family:"JetBrains Mono",monospace;font-size:20px;letter-spacing:.08em;text-transform:uppercase;color:#9AA39F}
+.proto{font-size:28px;color:#9AA39F}.ratio{display:flex;align-items:baseline;gap:28px}.num{font-weight:600;font-size:176px;line-height:.95;letter-spacing:-.045em}
+.st{display:flex;align-items:center;gap:12px;font-size:28px;font-weight:500;color:#3FD9AD}.st i{width:14px;height:14px;border-radius:7px;background:#3FD9AD}
+.foot{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:21px;color:#9AA39F}</style></head>
+<body><div class="og">
+  <div class="top"><div class="lock"><svg viewBox="0 0 64 64" width="44" height="44" fill="none"><path d="M7 8H17L37 52H27Z" fill="#F4F5F3"/><path d="M47 8H57L37 52H27Z" stroke="#F4F5F3" stroke-width="3.5"/><path d="M32 41L37 52H27Z" fill="#3FD9AD"/></svg><span class="wm">veraz</span></div><span class="lbl">New attestation</span></div>
+  <div><div class="proto">{{protocol_name}}</div><div class="ratio"><span class="num">{{solvency_ratio}}</span><span class="st"><i></i>{{status}}</span></div></div>
+  <div class="foot"><span>Ledger {{ledger_seq}} · ZK proof verified on Soroban</span><span>veraz-pos.xyz</span></div>
+</div></body></html>

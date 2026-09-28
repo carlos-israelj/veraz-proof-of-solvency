@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{margin:0}
+.card{width:1080px;height:1080px;box-sizing:border-box;background:#0B0F0E;color:#F4F5F3;padding:76px;display:flex;flex-direction:column;justify-content:space-between;font-family:Geist,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.top{display:flex;justify-content:space-between;align-items:center}.lock{display:flex;align-items:center;gap:14px}.wm{font-weight:500;font-size:36px;letter-spacing:-.03em}
+.lbl{font-family:"JetBrains Mono",monospace;font-size:22px;letter-spacing:.08em;text-transform:uppercase;color:#9AA39F}
+.proto{font-size:30px;color:#9AA39F}.st{display:flex;align-items:center;gap:14px;font-size:32px;font-weight:500;color:#3FD9AD;margin:10px 0}.st i{width:16px;height:16px;border-radius:8px;background:#3FD9AD}
+.num{font-weight:600;font-size:216px;line-height:.95;letter-spacing:-.045em}.sub{font-size:28px;color:#9AA39F;margin-left:24px}
+table{width:100%;border-collapse:collapse;font-family:"JetBrains Mono",monospace;font-size:26px;border-top:1px solid #262C29;padding-top:24px}
+td{padding:6px 0}td.n{text-align:right}tr.sub td{color:#9AA39F}tr.sub td:first-child{padding-left:28px}td.g{color:#3FD9AD}
+.foot{display:flex;justify-content:space-between;align-items:flex-end;font-family:"JetBrains Mono",monospace;font-size:22px;color:#9AA39F;padding-top:24px}.foot a{color:#82B6F2;text-decoration:none}</style></head>
+<body><div class="card">
+  <div class="top"><div class="lock"><svg viewBox="0 0 64 64" width="48" height="48" fill="none"><path d="M7 8H17L37 52H27Z" fill="#F4F5F3"/><path d="M47 8H57L37 52H27Z" stroke="#F4F5F3" stroke-width="3.5"/><path d="M32 41L37 52H27Z" fill="#3FD9AD"/></svg><span class="wm">veraz</span></div><span class="lbl">Solvency attestation</span></div>
+  <div><div class="proto">Protocol: {{protocol_name}}</div><div class="st"><i></i>Status: {{status}}</div><div style="display:flex;align-items:baseline"><span class="num">{{solvency_ratio}}</span><span class="sub">Solvency Ratio</span></div></div>
+  <div><table>
+    <tr><td>Reserves:</td><td class="n">{{reserves}}</td><td></td></tr>
+    <tr class="sub"><td>SAC Wallet:</td><td class="n">{{sac}}</td><td class="n">{{sac_pct}}</td></tr>
+    <tr class="sub"><td>DeFindex:</td><td class="n">{{defindex}}</td><td class="n">{{defindex_pct}}</td></tr>
+    <tr class="sub"><td>Aquarius:</td><td class="n">{{aquarius}}</td><td class="n">{{aquarius_pct}}</td></tr>
+    <tr><td style="padding-top:18px">Liabilities:</td><td class="n" style="padding-top:18px">{{liabilities}}</td><td></td></tr>
+    <tr><td class="g">Margin:</td><td class="n g">{{margin}}</td><td></td></tr>
+  </table>
+  <div class="foot"><span>Last verified: {{verified_at}} UTC<br>Ledger: {{ledger_seq}}</span><a href="{{explorer_url}}">View on Stellar Expert →</a></div></div>
+</div></body></html>

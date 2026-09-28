@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veraz - Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            text-align: center;
+            animation: fadeIn 1s ease-in;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px #00ff88;
+            letter-spacing: 0.1em;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #00ffff;
+            margin-bottom: 2rem;
+        }
+
+        .description {
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .tech-stack {
+            margin-top: 3rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tech-pill {
+            padding: 0.5rem 1rem;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status {
+            margin-top: 3rem;
+            padding: 1rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid #00ff88;
+            border-radius: 8px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: #888;
+        }
+
+        .status-value {
+            color: #00ff88;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VERAZ</h1>
+        <div class="subtitle">Zero-Knowledge Proof of Solvency</div>
+        <div class="description">
+            Cryptographically prove solvency without revealing individual balances.<br>
+            Privacy-preserving attestations for the Stellar ecosystem.
+        </div>
+
+        <div class="buttons">
+            <a href="http://localhost:3000" class="btn">🔍 Full App (Port 3000)</a>
+            <a href="http://localhost:5175" class="btn">⚡ Dev Mode (Port 5175)</a>
+        </div>
+
+        <div class="tech-stack">
+            <span class="tech-pill">UltraHonk</span>
+            <span class="tech-pill">Noir v1.0</span>
+            <span class="tech-pill">Soroban</span>
+            <span class="tech-pill">BN254</span>
+            <span class="tech-pill">DeFindex</span>
+            <span class="tech-pill">Aquarius</span>
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">Contract Status</span>
+                <span class="status-value">✅ Deployed (Testnet)</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Integrations</span>
+                <span class="status-value">SAC + DeFindex + Aquarius</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Testnet Contract</span>
+                <span class="status-value">CATBW...LFMEV</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log("✅ Veraz Test Page Loaded Successfully");
+        console.log("📊 Frontend Status:");
+        console.log("  - Production Build: http://localhost:3000");
+        console.log("  - Dev Server: http://localhost:5175");
+        console.log("🔗 Contract Addresses:");
+        console.log("  - Testnet: CATBWBOXEMTZZEXUKZMR3VCKHULI4CTCY3622IT74HOKGGBMP4DLFMEV");
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+/* Veraz · hoja de implementación · v1.3
+   Requiere: <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"> */
+@import url("tokens.css");
+
+html{font-family:var(--vz-font-sans);font-variant-numeric:tabular-nums;color:var(--vz-text);background:var(--vz-bg);-webkit-font-smoothing:antialiased}
+body{margin:0;font-size:15px;line-height:1.5}
+a{color:var(--vz-primary)} a:hover{color:var(--vz-secondary)}
+code,pre,.vz-mono{font-family:var(--vz-font-mono);font-size:.93em}
+
+/* Tipografía */
+.vz-display{font-weight:600;letter-spacing:-.04em;line-height:.95}
+.vz-h1{font-weight:600;font-size:40px;letter-spacing:-.03em;line-height:1.1}
+.vz-h2{font-weight:600;font-size:28px;letter-spacing:-.02em;line-height:1.15}
+.vz-label{font-family:var(--vz-font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--vz-text-2)}
+.vz-ratio{font-weight:600;font-size:96px;letter-spacing:-.045em;line-height:.95}
+
+/* Logo */
+.vz-lockup{display:inline-flex;align-items:center;gap:.4em;color:inherit;text-decoration:none}
+.vz-wordmark{font-family:var(--vz-font-sans);font-weight:500;letter-spacing:-.03em;font-size:1.45em;line-height:1}
+
+/* Superficies */
+.vz-card{background:var(--vz-surface);border:1px solid var(--vz-border);border-radius:12px;padding:24px}
+.vz-hr{border:0;border-top:1px solid var(--vz-border)}
+
+/* Botones */
+.vz-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:8px;font-weight:600;font-size:14px;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.vz-btn-primary{background:var(--vz-primary);color:#fff}
+[data-theme="dark"] .vz-btn-primary{color:#0B0F0E}
+.vz-btn-primary:hover{filter:brightness(.92)}
+.vz-btn-secondary{background:transparent;color:var(--vz-text);border-color:var(--vz-border)}
+
+/* Estados semánticos · texto/borde, nunca fondos saturados */
+.vz-status{display:inline-flex;align-items:center;gap:8px;font-weight:500}
+.vz-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.vz-status-solvent{color:var(--vz-solvent)}
+.vz-status-insolvent{color:var(--vz-insolvent)}
+.vz-status-stale{color:var(--vz-stale)}
+.vz-status-verified{color:var(--vz-proof-verified)}
+.vz-status-pending{color:var(--vz-proof-pending)}
+
+/* Badge de contrato (monotono: hereda color) */
+.vz-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border:1px solid currentColor;border-radius:999px;font-family:var(--vz-font-mono);font-size:12px;line-height:1}
+
+/* Progreso de proof */
+.vz-progress{height:6px;border-radius:3px;background:var(--vz-border);overflow:hidden}
+.vz-progress>span{display:block;height:100%;background:var(--vz-proof-pending)}
+.vz-progress.is-done>span{background:var(--vz-proof-verified)}
+
+/* Tabla de cifras */
+.vz-table{width:100%;border-collapse:collapse;font-family:var(--vz-font-mono);font-size:13px}
+.vz-table td,.vz-table th{padding:8px 0;border-bottom:1px solid var(--vz-border);text-align:left}
+.vz-table td.num,.vz-table th.num{text-align:right}
