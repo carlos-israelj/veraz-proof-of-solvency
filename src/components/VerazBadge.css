@@ -1,0 +1,407 @@
+/* Veraz Badge Styles */
+/* Based on PRODUCT_DEFINITION.md design principles and COMPETITIVE_POSITIONING.md differentiation */
+
+:root {
+  --veraz-green: #00ff88;
+  --veraz-cyan: #00ddff;
+  --veraz-violet: #8b5cf6;
+  --veraz-red: #ff4444;
+  --veraz-yellow: #ffaa00;
+  --veraz-gray-100: #f5f5f5;
+  --veraz-gray-200: #e5e5e5;
+  --veraz-gray-300: #d4d4d4;
+  --veraz-gray-700: #404040;
+  --veraz-gray-800: #262626;
+  --veraz-gray-900: #171717;
+}
+
+/* Badge Container */
+.veraz-badge {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.veraz-badge:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Theme: Auto (default to dark) */
+.veraz-badge--auto {
+  background: linear-gradient(135deg, var(--veraz-gray-800) 0%, var(--veraz-gray-900) 100%);
+  color: white;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+/* Theme: Dark */
+.veraz-badge--dark {
+  background: linear-gradient(135deg, var(--veraz-gray-800) 0%, var(--veraz-gray-900) 100%);
+  color: white;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+/* Theme: Light */
+.veraz-badge--light {
+  background: linear-gradient(135deg, white 0%, var(--veraz-gray-100) 100%);
+  color: var(--veraz-gray-900);
+  border: 1px solid var(--veraz-gray-300);
+}
+
+/* Size Variants */
+.veraz-badge--small {
+  min-width: 200px;
+  max-width: 250px;
+  font-size: 12px;
+  padding: 12px;
+}
+
+.veraz-badge--medium {
+  min-width: 280px;
+  max-width: 350px;
+  font-size: 14px;
+  padding: 16px;
+}
+
+.veraz-badge--large {
+  min-width: 350px;
+  max-width: 500px;
+  font-size: 16px;
+  padding: 20px;
+}
+
+/* Badge Header */
+.veraz-badge__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.veraz-badge__status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+/* Status Icon */
+.veraz-badge__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.veraz-badge__icon.solvent {
+  background: linear-gradient(135deg, var(--veraz-green) 0%, var(--veraz-cyan) 100%);
+  color: var(--veraz-gray-900);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.veraz-badge__icon.insolvent {
+  background: linear-gradient(135deg, var(--veraz-red) 0%, var(--veraz-yellow) 100%);
+  color: white;
+  box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+}
+
+/* Text Content */
+.veraz-badge__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.veraz-badge__label {
+  font-weight: 600;
+  font-size: 1em;
+  line-height: 1.2;
+}
+
+.veraz-badge__ratio {
+  font-size: 0.9em;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.veraz-badge__excess {
+  color: var(--veraz-green);
+  margin-left: 4px;
+  font-size: 0.9em;
+}
+
+.veraz-badge--light .veraz-badge__excess {
+  color: #00cc66;
+}
+
+/* Timestamp */
+.veraz-badge__timestamp {
+  font-size: 0.85em;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* Divider */
+.veraz-badge__divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  margin: 12px 0;
+}
+
+.veraz-badge--light .veraz-badge__divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.1) 50%, transparent 100%);
+}
+
+/* Breakdown Section */
+.veraz-badge__breakdown {
+  margin-top: 12px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.veraz-badge__breakdown-title {
+  font-size: 0.9em;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Reserve Sources */
+.veraz-badge__reserves {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.veraz-badge__source {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.veraz-badge--light .veraz-badge__source {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.veraz-badge__source-label {
+  opacity: 0.8;
+}
+
+.veraz-badge__source-amount {
+  font-weight: 600;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+}
+
+.veraz-badge__source-pct {
+  opacity: 0.6;
+  font-size: 0.9em;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Totals */
+.veraz-badge__totals {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 255, 136, 0.1);
+  margin-bottom: 12px;
+}
+
+.veraz-badge--light .veraz-badge__totals {
+  background: rgba(0, 204, 102, 0.08);
+  border-color: rgba(0, 204, 102, 0.2);
+}
+
+.veraz-badge__total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.veraz-badge__total-row strong {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  font-weight: 600;
+}
+
+/* Footer Link */
+.veraz-badge__footer {
+  margin-top: 8px;
+}
+
+.veraz-badge__link {
+  display: inline-block;
+  font-size: 0.85em;
+  color: var(--veraz-cyan);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.veraz-badge__link:hover {
+  color: var(--veraz-green);
+  text-decoration: underline;
+}
+
+.veraz-badge--light .veraz-badge__link {
+  color: #0088cc;
+}
+
+.veraz-badge--light .veraz-badge__link:hover {
+  color: #0066aa;
+}
+
+/* Branding */
+.veraz-badge__branding {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.veraz-badge--light .veraz-badge__branding {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.veraz-badge__branding a {
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.veraz-badge__branding a:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.veraz-badge--light .veraz-badge__branding a {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.veraz-badge--light .veraz-badge__branding a:hover {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* Loading State */
+.veraz-badge--loading {
+  background: linear-gradient(135deg, var(--veraz-gray-800) 0%, var(--veraz-gray-900) 100%);
+  border-color: rgba(0, 221, 255, 0.2);
+}
+
+.veraz-badge__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.veraz-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 221, 255, 0.2);
+  border-top-color: var(--veraz-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.veraz-badge--error {
+  background: linear-gradient(135deg, #331111 0%, #221111 100%);
+  border-color: rgba(255, 68, 68, 0.3);
+}
+
+.veraz-badge__error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  color: var(--veraz-red);
+}
+
+.veraz-badge__error .veraz-badge__icon {
+  background: none;
+  box-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .veraz-badge--small {
+    min-width: 180px;
+  }
+
+  .veraz-badge--medium {
+    min-width: 240px;
+  }
+
+  .veraz-badge--large {
+    min-width: 280px;
+  }
+
+  .veraz-badge__source {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+  }
+
+  .veraz-badge__source-pct {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .veraz-badge__source-amount {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .veraz-badge {
+    box-shadow: none;
+    border: 1px solid var(--veraz-gray-300);
+  }
+
+  .veraz-badge__link,
+  .veraz-badge__branding a {
+    color: inherit;
+    text-decoration: underline;
+  }
+}

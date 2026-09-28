@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useWallet } from '../contexts/WalletContext';
 import DataStream from './DataStream';
 
 export default function ProofGenerator({ balances, contractId, address, onSuccess, onError }) {
+  const { signTransaction } = useWallet();
   const [stage, setStage] = useState(0);
   const [progress, setProgress] = useState(0);
   const [triviaIndex, setTriviaIndex] = useState(0);
@@ -84,6 +86,7 @@ export default function ProofGenerator({ balances, contractId, address, onSucces
         publicInputs,
         proof,
         sourceAddress: address,
+        signTransactionFn: signTransaction,
       });
 
       setProgress(95);

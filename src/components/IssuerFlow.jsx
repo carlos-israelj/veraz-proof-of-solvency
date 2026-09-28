@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { isConnected, setAllowed, getAddress } from '@stellar/freighter-api';
+import { useState } from 'react';
+import { useWallet } from '../contexts/WalletContext';
 import ProofGenerator from './ProofGenerator';
 import ShieldAnimation from './ShieldAnimation';
 
@@ -7,8 +7,8 @@ const N = 8; // Circuit supports 8 holders
 const DEFAULT_CONTRACT = 'CACQIPK5OAJTT44WEK4D5IP2CWAVRTBLDXXRY3LO4HNSJAUUAQGTHNHS';
 
 export default function IssuerFlow({ onBack }) {
+  const { publicKey, isConnected, connectWallet: walletConnect, disconnect } = useWallet();
   const [step, setStep] = useState(0); // 0: connect, 1: input, 2: generating, 3: success
-  const [address, setAddress] = useState(null);
   const [balances, setBalances] = useState('100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000');
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT);
   const [txHash, setTxHash] = useState(null);
@@ -18,15 +18,9 @@ export default function IssuerFlow({ onBack }) {
   const count = balanceList.length;
   const totalLiabilities = balanceList.reduce((sum, b) => sum + Number(b), 0);
 
-  async function connectWallet() {
+  async function handleConnectWallet() {
     try {
-      if (!(await isConnected())) {
-        setError('Please install Freighter wallet extension');
-        return;
-      }
-      await setAllowed();
-      const { address: addr } = await getAddress();
-      setAddress(addr);
+      await walletConnect();
       setError('');
       setStep(1);
     } catch (e) {
@@ -110,12 +104,12 @@ export default function IssuerFlow({ onBack }) {
                 <circle cx="24" cy="32" r="4" fill="currentColor"/>
               </svg>
             </div>
-            <h2>Connect Freighter Wallet</h2>
+            <h2>Connect Stellar Wallet</h2>
             <p className="step-description">
-              Sign transactions using your Stellar wallet. Your private keys never leave
-              the Freighter extension.
+              Sign transactions using your preferred Stellar wallet (Freighter, xBull, Lobstr, etc.).
+              Your private keys never leave your wallet extension.
             </p>
-            <button className="btn btn-primary" onClick={connectWallet}>
+            <button className="btn btn-primary" onClick={handleConnectWallet}>
               Connect Wallet
             </button>
           </div>
@@ -129,9 +123,19 @@ export default function IssuerFlow({ onBack }) {
               <div className="connected-header">
                 <span className="status-dot"></span>
                 <span className="mono">Wallet Connected</span>
+                <button
+                  className="btn-disconnect"
+                  onClick={() => {
+                    disconnect();
+                    setStep(0);
+                  }}
+                  title="Disconnect wallet"
+                >
+                  ✕
+                </button>
               </div>
               <div className="connected-address mono text-gradient">
-                {address?.slice(0, 8)}...{address?.slice(-8)}
+                {publicKey?.slice(0, 8)}...{publicKey?.slice(-8)}
               </div>
             </div>
 
@@ -162,37 +166,63 @@ export default function IssuerFlow({ onBack }) {
 
             {/* Balance Input */}
             <div className="card input-card">
-              <h3>Liability Inputs</h3>
-              <p className="input-help">
-                Enter {N} holder balances (comma or space separated).
-                These values remain private - only the Merkle root is revealed.
-              </p>
+              <div className="input-header">
+                <h3>Token Holder Liabilities</h3>
+                <span className="info-badge" title="Total amount owed to token holders">ℹ️</span>
+              </div>
+
+              <div className="liability-explainer">
+                <p className="explainer-text">
+                  <strong>Liabilities</strong> are the total token balances held by your users.
+                  To prove solvency, your reserves must equal or exceed this amount.
+                </p>
+                <div className="explainer-formula">
+                  <span className="formula-item reserves">Reserves</span>
+                  <span className="formula-operator">≥</span>
+                  <span className="formula-item liabilities">Liabilities</span>
+                  <span className="formula-result">= Solvent ✓</span>
+                </div>
+              </div>
+
+              <div className="input-method-tabs">
+                <button className="tab-btn active">Manual Input</button>
+                <button className="tab-btn" disabled title="Coming soon: Auto-fetch from Horizon API">
+                  Import from Stellar
+                </button>
+              </div>
 
               {/* Stats */}
               <div className="stats-grid">
                 <div className="stat-item">
                   <div className="stat-label">Total Liabilities</div>
                   <div className="stat-value mono">{totalLiabilities.toLocaleString()}</div>
+                  <div className="stat-sublabel">Sum of all holder balances</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-label">Holders</div>
+                  <div className="stat-label">Holders Counted</div>
                   <div className={`stat-value mono ${count === N ? 'text-gradient' : 'opacity-50'}`}>
                     {count}/{N}
                   </div>
+                  <div className="stat-sublabel">Required for proof</div>
                 </div>
               </div>
+
+              <label className="input-label">
+                Enter {N} holder balances (comma or space separated)
+                <span className="privacy-note">🔒 Zero-Knowledge: Individual amounts remain private</span>
+              </label>
 
               <textarea
                 className="input balance-input mono"
                 value={balances}
                 onChange={(e) => setBalances(e.target.value)}
-                placeholder="100000, 50000, 25000, ..."
+                placeholder="100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000"
                 rows={4}
               />
 
               <div className="balance-status">
                 {count === N ? (
-                  <span className="badge badge-success">✓ Ready</span>
+                  <span className="badge badge-success">✓ Ready to Generate Proof</span>
                 ) : (
                   <span className="badge badge-error">⚠ Need {N - count} more</span>
                 )}
@@ -226,7 +256,7 @@ export default function IssuerFlow({ onBack }) {
           <ProofGenerator
             balances={balanceList}
             contractId={contractId}
-            address={address}
+            address={publicKey}
             onSuccess={handleProofSuccess}
             onError={handleProofError}
           />
@@ -430,6 +460,7 @@ export default function IssuerFlow({ onBack }) {
           font-size: 0.875rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+          position: relative;
         }
 
         .status-dot {
@@ -438,6 +469,29 @@ export default function IssuerFlow({ onBack }) {
           background: var(--emerald-electric);
           border-radius: 50%;
           animation: pulse 2s ease-in-out infinite;
+        }
+
+        .btn-disconnect {
+          margin-left: auto;
+          background: none;
+          border: 1px solid var(--noir-slate);
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--noir-fog);
+          cursor: pointer;
+          transition: all var(--duration-fast);
+          font-size: 0.875rem;
+          padding: 0;
+        }
+
+        .btn-disconnect:hover {
+          background: rgba(255, 0, 0, 0.1);
+          border-color: var(--ruby-alert);
+          color: var(--ruby-alert);
         }
 
         .connected-address {
@@ -492,6 +546,108 @@ export default function IssuerFlow({ onBack }) {
           margin-bottom: var(--space-sm);
         }
 
+        .input-header {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+          margin-bottom: var(--space-md);
+        }
+
+        .info-badge {
+          font-size: 1rem;
+          opacity: 0.6;
+          cursor: help;
+          transition: opacity var(--duration-fast);
+        }
+
+        .info-badge:hover {
+          opacity: 1;
+        }
+
+        .liability-explainer {
+          background: rgba(0, 255, 255, 0.05);
+          border: 1px solid var(--cyan-bright);
+          border-radius: var(--radius-md);
+          padding: var(--space-md);
+          margin-bottom: var(--space-lg);
+        }
+
+        .explainer-text {
+          color: var(--noir-fog);
+          font-size: 0.9rem;
+          line-height: 1.6;
+          margin-bottom: var(--space-md);
+        }
+
+        .explainer-formula {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--space-sm);
+          padding: var(--space-sm);
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: var(--radius-sm);
+          font-family: var(--font-mono);
+          font-size: 0.95rem;
+        }
+
+        .formula-item {
+          padding: var(--space-xs) var(--space-sm);
+          border-radius: var(--radius-sm);
+          font-weight: 600;
+        }
+
+        .formula-item.reserves {
+          background: rgba(0, 255, 255, 0.2);
+          color: var(--cyan-bright);
+        }
+
+        .formula-item.liabilities {
+          background: rgba(139, 92, 246, 0.2);
+          color: var(--violet-deep);
+        }
+
+        .formula-operator {
+          color: var(--noir-fog);
+          font-size: 1.2rem;
+        }
+
+        .formula-result {
+          margin-left: var(--space-sm);
+          padding-left: var(--space-sm);
+          border-left: 1px solid var(--noir-slate);
+          color: var(--emerald-electric);
+        }
+
+        .input-method-tabs {
+          display: flex;
+          gap: var(--space-xs);
+          margin-bottom: var(--space-md);
+        }
+
+        .tab-btn {
+          flex: 1;
+          padding: var(--space-sm) var(--space-md);
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--noir-slate);
+          border-radius: var(--radius-md);
+          color: var(--noir-fog);
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: all var(--duration-fast);
+        }
+
+        .tab-btn.active {
+          background: rgba(0, 255, 255, 0.1);
+          border-color: var(--cyan-bright);
+          color: var(--cyan-bright);
+        }
+
+        .tab-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
         .input-help {
           color: var(--noir-fog);
           font-size: 0.875rem;
@@ -522,6 +678,28 @@ export default function IssuerFlow({ onBack }) {
         .stat-value {
           font-size: 1.5rem;
           font-weight: 600;
+        }
+
+        .stat-sublabel {
+          font-size: 0.75rem;
+          color: var(--noir-fog);
+          margin-top: var(--space-xs);
+          opacity: 0.7;
+        }
+
+        .input-label {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-xs);
+          margin-bottom: var(--space-sm);
+          font-size: 0.9rem;
+          color: var(--noir-silver);
+        }
+
+        .privacy-note {
+          font-size: 0.8rem;
+          color: var(--emerald-electric);
+          font-style: italic;
         }
 
         .balance-input {

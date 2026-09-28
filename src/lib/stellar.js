@@ -3,15 +3,23 @@
 // - attest        -> escritura firmada: envía la prueba al contrato (Capa 2 attest)
 // - getCurrentLedgerSeq -> obtiene el ledger sequence actual de la red
 
-import * as StellarSdk from "@stellar/stellar-sdk";
-import { signTransaction } from "@stellar/freighter-api";
+import {
+  Account,
+  Contract,
+  TransactionBuilder,
+  Networks,
+  BASE_FEE,
+  xdr,
+  scValToNative,
+} from "@stellar/stellar-sdk";
+import { Server, Api } from "@stellar/stellar-sdk/rpc";
 
 export const config = {
   rpcUrl: "https://soroban-testnet.stellar.org",
-  networkPassphrase: StellarSdk.Networks.TESTNET,
+  networkPassphrase: Networks.TESTNET,
 };
 
-const rpc = new StellarSdk.rpc.Server(config.rpcUrl);
+const rpc = new Server(config.rpcUrl);
 
 // Cuenta "dummy" para simular llamadas de solo lectura sin necesidad de firma.
 // Esta es una cuenta válida con checksum correcto que se usa solo para simulaciones (no necesita existir en la red)
@@ -44,7 +52,7 @@ function bytesToScVal(bytes) {
   if (!(bytes instanceof Uint8Array)) {
     throw new Error(`bytesToScVal expects Uint8Array, got ${typeof bytes}`);
   }
-  return StellarSdk.xdr.ScVal.scvBytes(bytes);
+  return xdr.ScVal.scvBytes(bytes);
 }
 
 /**
@@ -63,11 +71,11 @@ export async function getCurrentLedgerSeq() {
 export async function querySolvent(contractId) {
   try {
     console.log("[querySolvent] Iniciando consulta para contractId:", contractId);
-    const account = new StellarSdk.Account(READONLY_SOURCE, "0");
-    const contract = new StellarSdk.Contract(contractId);
+    const account = new Account(READONLY_SOURCE, "0");
+    const contract = new Contract(contractId);
 
-    const tx = new StellarSdk.TransactionBuilder(account, {
-      fee: StellarSdk.BASE_FEE,
+    const tx = new TransactionBuilder(account, {
+      fee: BASE_FEE,
       networkPassphrase: config.networkPassphrase,
     })
       .addOperation(contract.call("is_solvent"))
@@ -78,7 +86,7 @@ export async function querySolvent(contractId) {
     const sim = await rpc.simulateTransaction(tx);
     console.log("[querySolvent] Resultado de simulación:", sim);
 
-    if (StellarSdk.rpc.Api.isSimulationError(sim)) {
+    if (Api.isSimulationError(sim)) {
       console.error("[querySolvent] Error en simulación:", sim.error);
       const friendly = parseContractError(sim.error);
       throw new Error(friendly || `Simulación falló: ${sim.error}`);
@@ -86,7 +94,7 @@ export async function querySolvent(contractId) {
     const retval = sim.result?.retval;
     console.log("[querySolvent] Valor de retorno:", retval);
     if (!retval) return null;
-    const result = StellarSdk.scValToNative(retval);
+    const result = scValToNative(retval);
     console.log("[querySolvent] Resultado deserializado:", result);
     return result;
   } catch (error) {
@@ -95,8 +103,8 @@ export async function querySolvent(contractId) {
   }
 }
 
-// Atestación: el emisor envía (public_inputs, proof) al contrato. Firma con Freighter.
-export async function attest({ contractId, publicInputs, proof, sourceAddress }) {
+// Atestación: el emisor envía (public_inputs, proof) al contrato. Firma con la wallet conectada.
+export async function attest({ contractId, publicInputs, proof, sourceAddress, signTransactionFn }) {
   // Validaciones de formato antes de enviar a la blockchain
   if (!(publicInputs instanceof Uint8Array) || publicInputs.length !== 96) {
     throw new Error(
@@ -114,10 +122,10 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress })
   }
 
   const account = await rpc.getAccount(sourceAddress);
-  const contract = new StellarSdk.Contract(contractId);
+  const contract = new Contract(contractId);
 
-  let tx = new StellarSdk.TransactionBuilder(account, {
-    fee: StellarSdk.BASE_FEE,
+  let tx = new TransactionBuilder(account, {
+    fee: BASE_FEE,
     networkPassphrase: config.networkPassphrase,
   })
     .addOperation(contract.call("attest", bytesToScVal(publicInputs), bytesToScVal(proof)))
@@ -126,17 +134,15 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress })
 
   // Simular para estimar recursos y ensamblar.
   const sim = await rpc.simulateTransaction(tx);
-  if (StellarSdk.rpc.Api.isSimulationError(sim)) {
+  if (Api.isSimulationError(sim)) {
     const friendly = parseContractError(sim.error);
     throw new Error(friendly || `Simulación falló: ${sim.error}`);
   }
-  tx = StellarSdk.rpc.assembleTransaction(tx, sim).build();
+  tx = await rpc.prepareTransaction(tx);
 
-  // Firmar con Freighter.
-  const { signedTxXdr } = await signTransaction(tx.toXDR(), {
-    networkPassphrase: config.networkPassphrase,
-  });
-  const signed = StellarSdk.TransactionBuilder.fromXDR(signedTxXdr, config.networkPassphrase);
+  // Firmar con la wallet conectada (pasada como parámetro).
+  const signedTxXdr = await signTransactionFn(tx.toXdr());
+  const signed = TransactionBuilder.fromXdr(signedTxXdr, config.networkPassphrase);
 
   // Enviar y esperar confirmación.
   const sent = await rpc.sendTransaction(signed);

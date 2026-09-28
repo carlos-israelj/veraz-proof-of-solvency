@@ -6,6 +6,7 @@ package-lock.json
 dist/
 target/
 build/
+.vite/
 
 # Environment files
 .env

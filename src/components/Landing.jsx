@@ -172,7 +172,7 @@ export default function Landing({ onNavigate }) {
       {/* Footer */}
       <footer className="landing-footer">
         <p className="mono opacity-50">
-          Built for Stellar PULSO Hackathon • Powered by UltraHonk & Soroban
+          Powered by UltraHonk & Soroban
         </p>
       </footer>
 

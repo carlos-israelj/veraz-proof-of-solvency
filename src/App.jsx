@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { WalletProvider } from './contexts/WalletContext';
 import Landing from './components/Landing';
 import IssuerFlow from './components/IssuerFlow';
 import AuditorFlow from './components/AuditorFlow';
@@ -20,21 +21,22 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
-      {/* Background Effects */}
-      <div className="bg-gradient-1"></div>
-      <div className="bg-gradient-2"></div>
+    <WalletProvider>
+      <div className="app-container">
+        {/* Background Effects */}
+        <div className="bg-gradient-1"></div>
+        <div className="bg-gradient-2"></div>
 
-      {/* Animated Backgrounds */}
-      <HexGrid opacity={0.03} />
-      <ParticleNetwork active={view === 'landing'} />
-      <CursorTrail active={true} />
+        {/* Animated Backgrounds */}
+        <HexGrid opacity={0.03} />
+        <ParticleNetwork active={view === 'landing'} />
+        <CursorTrail active={true} />
 
-      {/* View Router */}
-      {view === 'landing' && <Landing onNavigate={handleNavigate} />}
-      {view === 'issuer' && <IssuerFlow onBack={handleBack} />}
-      {view === 'auditor' && <AuditorFlow onBack={handleBack} />}
-      {view === 'integrations' && <IntegrationsView onBack={handleBack} />}
+        {/* View Router */}
+        {view === 'landing' && <Landing onNavigate={handleNavigate} />}
+        {view === 'issuer' && <IssuerFlow onBack={handleBack} />}
+        {view === 'auditor' && <AuditorFlow onBack={handleBack} />}
+        {view === 'integrations' && <IntegrationsView onBack={handleBack} />}
 
       <style jsx>{`
         .app-container {
@@ -86,6 +88,7 @@ export default function App() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </WalletProvider>
   );
 }

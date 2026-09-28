@@ -55,6 +55,7 @@ function pinoBrowserStub() {
 }
 
 export default defineConfig({
+  base: './', // Use relative paths for GitHub Pages
   plugins: [wasm(), topLevelAwait(), pinoBrowserStub(), react()],
   define: {
     // Algunas libs de Node.js usan `global` en lugar de `globalThis`
@@ -65,13 +66,22 @@ export default defineConfig({
       // Resolver `buffer` al paquete browser-compatible (ya instalado como dep transitiva)
       buffer: "buffer/",
     },
+    // CRITICAL FIX: Completely override browser condition to avoid UMD bundle
+    // Remove 'browser' from default conditions to force 'default' export (ES6 modules)
+    conditions: ['default', 'module', 'import'],
+    mainFields: ['module', 'main'],
   },
   optimizeDeps: {
     esbuildOptions: {
       target: "esnext",
       define: { global: "globalThis" },
     },
-    exclude: ["@noir-lang/noir_js", "@noir-lang/acvm_js", "@aztec/bb.js"],
+    exclude: [
+      "@noir-lang/noir_js",
+      "@noir-lang/acvm_js",
+      "@aztec/bb.js",
+      "@stellar/stellar-sdk", // CRITICAL: Exclude to avoid UMD bundle pre-processing
+    ],
     include: ["buffer"],
   },
   build: { target: "esnext" },
@@ -79,7 +89,16 @@ export default defineConfig({
   server: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Embedder-Policy": "credentialless",
+      "Cross-Origin-Resource-Policy": "cross-origin",
+    },
+    proxy: {
+      // Proxy wallet icons to avoid CORS issues
+      '/wallet-icon-proxy': {
+        target: 'https://stellar.creit.tech',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/wallet-icon-proxy/, '/wallet-icons'),
+      },
     },
   },
 });

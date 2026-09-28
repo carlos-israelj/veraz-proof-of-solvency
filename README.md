@@ -2,11 +2,13 @@
 
 # Veraz
 
-**Production-Ready Solvency Verification for DeFi-Active Stablecoin Issuers**
+**Continuous Solvency Verification for Stellar DeFi Protocols**
 
-**The ONLY solution that verifies solvency across SAC balances AND AMM liquidity pools with Zero-Knowledge privacy.**
+**The ONLY solution that proves solvency across SAC wallets + DeFindex vaults + Aquarius pools with Zero-Knowledge privacy.**
 
-[Demo Video](#demo-video) · [Live Demo](http://localhost:5173) · [Smart Contracts](#deployed-contracts-testnet) · [Aquarius Integration](#-aquarius-amm-integration) · [Documentation](./docs/)
+[📚 Documentation](./docs/) · [📋 Product Definition](./docs/planning/PRODUCT_DEFINITION.md) · [🚀 Testnet Deployment](./docs/technical/TESTNET_DEPLOYMENT_REPORT.md) · [📊 Latest Progress](./docs/progress/WEEK2_SESSION_SUMMARY.md)
+
+> **NEW**: See [`docs/`](./docs/) for complete planning, technical specs, and progress reports (43,000+ words, professionally organized)
 
 [![PULSO Hackathon](https://img.shields.io/badge/PULSO%20Hackathon-Stellar%20LATAM-blue)](https://lu.ma/pulso)
 [![Aquarius Integration](https://img.shields.io/badge/SCF%20Integration-Aquarius%20AMM-green)](https://docs.aqua.network/)
