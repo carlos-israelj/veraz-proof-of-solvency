@@ -5,11 +5,7 @@
  * Based on docs/technical/API_SPECIFICATION_V1.md
  */
 
-import StellarSdk from '@stellar/stellar-sdk';
-
-// SDK v13 uses new structure: rpc.Server instead of SorobanRpc.Server
-const rpc = StellarSdk.rpc;
-const Contract = StellarSdk.contract;
+import * as StellarSdk from '@stellar/stellar-sdk';
 
 class StellarService {
   constructor() {
@@ -17,11 +13,12 @@ class StellarService {
     this.horizonUrl = process.env.STELLAR_HORIZON_URL || 'https://horizon-testnet.stellar.org';
 
     // Initialize RPC server
-    const rpcUrl = this.network === 'mainnet'
-      ? 'https://soroban-rpc.mainnet.stellar.org'
-      : 'https://soroban-rpc.testnet.stellar.org';
+    const rpcUrl = process.env.STELLAR_RPC_URL ||
+      (this.network === 'mainnet'
+        ? 'https://soroban-rpc.mainnet.stellar.org'
+        : 'https://soroban-testnet.stellar.org');
 
-    this.server = new rpc.Server(rpcUrl);
+    this.server = new StellarSdk.rpc.Server(rpcUrl);
 
     // Contract addresses
     this.solvencyContract = process.env.SOLVENCY_CONTRACT;
@@ -32,58 +29,110 @@ class StellarService {
 
   /**
    * Query solvency attestation from contract
-   * @param {string} protocolId - Protocol identifier
+   * @param {string} protocolId - Protocol contract ID (solvency policy contract)
    * @returns {Promise<Object|null>} Attestation object or null
    */
   async querySolvencyAttestation(protocolId) {
     try {
-      // TODO: Implement actual contract querying with SDK v13
-      // For now, return mock data to test API structure
-
       // Validate it's a valid contract address format
       if (!protocolId || protocolId.length !== 56 || !protocolId.startsWith('C')) {
+        console.log(`Invalid protocol ID format: ${protocolId}`);
         return null;
       }
 
-      // Return mock attestation data
-      // In production, this would query the actual contract:
-      // 1. Create contract client
-      // 2. Call is_solvent() method
-      // 3. Parse Soroban result to native types
+      console.log(`Querying solvency attestation for: ${protocolId}`);
 
-      return this.parseAttestation(null);
+      // Create contract instance
+      const contractAddress = protocolId;
+      const sourceAccount = await this.server.getAccount(
+        'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF' // Null account for simulation
+      );
+
+      // Build transaction to call is_solvent() method
+      const contract = new StellarSdk.Contract(contractAddress);
+
+      const transaction = new StellarSdk.TransactionBuilder(sourceAccount, {
+        fee: StellarSdk.BASE_FEE,
+        networkPassphrase: this.network === 'mainnet'
+          ? StellarSdk.Networks.PUBLIC
+          : StellarSdk.Networks.TESTNET,
+      })
+        .addOperation(contract.call('is_solvent'))
+        .setTimeout(30)
+        .build();
+
+      // Simulate the transaction to get result without submitting
+      const simulation = await this.server.simulateTransaction(transaction);
+
+      if (!simulation.result) {
+        console.log('No result from simulation');
+        return null;
+      }
+
+      // Parse the attestation from simulation result
+      const attestation = this.parseAttestation(simulation.result.retval);
+
+      console.log('✅ Attestation retrieved:', {
+        solvent: attestation.solvent,
+        reserves: this.formatStroops(attestation.reserves),
+        liabilities: this.formatStroops(attestation.liabilities)
+      });
+
+      return attestation;
 
     } catch (error) {
-      console.error('Error querying solvency:', error);
+      console.error('Error querying solvency:', error.message);
 
-      // Return null if no attestation exists (expected for new protocols)
-      if (error.message?.includes('null') || error.message?.includes('not found')) {
+      // Return null if no attestation exists (expected for new/uninitialized protocols)
+      if (error.message?.includes('null') ||
+          error.message?.includes('not found') ||
+          error.message?.includes('not initialized')) {
         return null;
       }
 
-      throw error;
+      // For other errors, throw to be handled by controller
+      throw new Error(`Failed to query contract: ${error.message}`);
     }
   }
 
   /**
    * Parse attestation from Soroban result
-   * @param {Object} result - Soroban RPC result
+   * @param {Object} scVal - Soroban ScVal (struct returned from is_solvent)
    * @returns {Object} Parsed attestation
    */
-  parseAttestation(result) {
-    // Mock implementation - in real version, parse Soroban types
-    // This would use stellar-sdk's scValToNative or similar
+  parseAttestation(scVal) {
+    try {
+      // Convert Soroban ScVal to native JavaScript object
+      // The is_solvent() method returns an Attestation struct:
+      // struct Attestation {
+      //     solvent: bool,
+      //     reserves: i128,
+      //     sac_balance: i128,
+      //     aquarius_balance: i128,
+      //     defindex_balance: i128,
+      //     liabilities: i128,
+      //     ledger_seq: u32,
+      //     timestamp: u64
+      // }
 
-    return {
-      solvent: true, // Parse from result
-      reserves: '100000000000',
-      sac_balance: '100000000000',
-      aquarius_balance: '0',
-      defindex_balance: '0',
-      liabilities: '95000000000',
-      ledger_seq: 12345678,
-      timestamp: Math.floor(Date.now() / 1000)
-    };
+      const attestation = StellarSdk.scValToNative(scVal);
+
+      // Convert i128 values to string (to avoid precision loss)
+      return {
+        solvent: attestation.solvent,
+        reserves: attestation.reserves.toString(),
+        sac_balance: attestation.sac_balance.toString(),
+        aquarius_balance: attestation.aquarius_balance.toString(),
+        defindex_balance: attestation.defindex_balance.toString(),
+        liabilities: attestation.liabilities.toString(),
+        ledger_seq: Number(attestation.ledger_seq),
+        timestamp: Number(attestation.timestamp)
+      };
+
+    } catch (error) {
+      console.error('Error parsing attestation:', error);
+      throw new Error(`Failed to parse contract response: ${error.message}`);
+    }
   }
 
   /**
