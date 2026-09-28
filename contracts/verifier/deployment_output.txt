@@ -1,0 +1,5 @@
+error: unexpected argument '' found
+
+Usage: stellar contract deploy [OPTIONS] --source-account <SOURCE_ACCOUNT> <--wasm <WASM>|--wasm-hash <WASM_HASH>> [-- <CONTRACT_CONSTRUCTOR_ARGS>...]
+
+For more information, try '--help'.

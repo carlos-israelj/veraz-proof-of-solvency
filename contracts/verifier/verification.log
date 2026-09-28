@@ -1,0 +1,5 @@
+error: unexpected argument '' found
+
+Usage: stellar contract invoke [OPTIONS] --id <CONTRACT_ID> --source-account <SOURCE_ACCOUNT> [-- <CONTRACT_FN_AND_ARGS>...]
+
+For more information, try '--help'.
