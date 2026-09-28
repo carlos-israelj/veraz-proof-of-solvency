@@ -394,6 +394,11 @@ code, pre, .vz-mono {
   letter-spacing: 0.05em;
 }
 
+/* Card hover effect from landing.html */
+.vz-hover:hover {
+  border-color: #3FD9AD !important;
+}
+
 /* ============================================
    INPUTS
    ============================================ */
