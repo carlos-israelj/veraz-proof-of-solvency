@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "Defindex": {
+      "type": "http",
+      "url": "https://docs.defindex.io/~gitbook/mcp"
+    }
+  }
+}
