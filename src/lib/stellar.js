@@ -31,7 +31,7 @@ const READONLY_SOURCE =
 const CONTRACT_ERRORS = {
   "Error(Contract, #1)": "El contrato ya fue inicializado.",
   "Error(Contract, #2)": "El contrato no ha sido inicializado.",
-  "Error(Contract, #3)": "Public inputs con formato incorrecto. Deben ser exactamente 96 bytes.",
+  "Error(Contract, #3)": "Public inputs con formato incorrecto. Deben ser exactamente 128 bytes (root + liabilities + ledger_seq + reserve_addresses_hash).",
   "Error(Contract, #4)": "Verificación ZK falló. La prueba fue rechazada por el verifier on-chain. Verifica que el circuito local coincida con el VK del contrato.",
   "Error(Contract, #10)": "Prueba obsoleta (StaleProof). El ledger_seq está fuera de la ventana de frescura (100 ledgers).",
   "Error(Contract, #11)": "Replay detectado. Ya se usó este ledger_seq. Espera al siguiente ledger.",
@@ -166,4 +166,68 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress, s
   // Si llegamos aquí, la transacción fue exitosa
   console.log("✅ Transacción confirmada on-chain:", sent.hash);
   return { hash: sent.hash };
+}
+
+/**
+ * Hash reserve addresses using SHA256 (matching smart contract implementation)
+ * Returns hash and padded addresses array for circuit input
+ * @param {string[]} addresses - Array of Stellar addresses
+ * @returns {Promise<{reserveAddressesHash: string, paddedAddresses: string[]}>}
+ */
+export async function hashReserveAddresses(addresses) {
+  const MAX_RESERVE_ACCOUNTS = 5;
+
+  if (!addresses || addresses.length === 0) {
+    throw new Error("At least one reserve address is required");
+  }
+
+  if (addresses.length > MAX_RESERVE_ACCOUNTS) {
+    throw new Error(`Maximum ${MAX_RESERVE_ACCOUNTS} reserve addresses allowed`);
+  }
+
+  // Convert addresses to field elements (hash each address)
+  const addrFields = [];
+  for (const addr of addresses) {
+    // Hash the address string to get a field element
+    const encoder = new TextEncoder();
+    const data = encoder.encode(addr);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+    // Convert hash to BigInt (field element)
+    let fieldValue = 0n;
+    for (const byte of hashArray) {
+      fieldValue = (fieldValue << 8n) | BigInt(byte);
+    }
+
+    addrFields.push(fieldValue.toString());
+  }
+
+  // Pad with zeros to MAX_RESERVE_ACCOUNTS
+  while (addrFields.length < MAX_RESERVE_ACCOUNTS) {
+    addrFields.push("0");
+  }
+
+  // Compute combined hash (simulating Pedersen hash in circuit)
+  // Concatenate all field hashes and hash again
+  let combined = "";
+  for (const field of addrFields) {
+    combined += field;
+  }
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(combined);
+  const finalHashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const finalHashArray = Array.from(new Uint8Array(finalHashBuffer));
+
+  // Convert final hash to BigInt
+  let finalHash = 0n;
+  for (const byte of finalHashArray) {
+    finalHash = (finalHash << 8n) | BigInt(byte);
+  }
+
+  return {
+    reserveAddressesHash: finalHash.toString(),
+    paddedAddresses: addrFields,
+  };
 }

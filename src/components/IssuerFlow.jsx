@@ -11,6 +11,7 @@ export default function IssuerFlow({ onBack }) {
   const [step, setStep] = useState(0); // 0: connect, 1: input, 2: generating, 3: success
   const [balances, setBalances] = useState('100000, 50000, 25000, 75000, 30000, 20000, 60000, 40000');
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT);
+  const [reserveAddresses, setReserveAddresses] = useState(''); // Stellar addresses for reserve commitment
   const [txHash, setTxHash] = useState(null);
   const [error, setError] = useState('');
 
@@ -33,6 +34,26 @@ export default function IssuerFlow({ onBack }) {
       setError(`Circuit requires exactly ${N} balances`);
       return;
     }
+
+    // Validate reserve addresses
+    const addressList = reserveAddresses.split(/[\s,]+/).filter(Boolean);
+    if (addressList.length === 0) {
+      setError('At least one reserve address is required');
+      return;
+    }
+    if (addressList.length > 5) {
+      setError('Maximum 5 reserve addresses allowed');
+      return;
+    }
+
+    // Basic validation of Stellar address format (starts with G, 56 chars)
+    for (const addr of addressList) {
+      if (!addr.startsWith('G') || addr.length !== 56) {
+        setError(`Invalid Stellar address format: ${addr}`);
+        return;
+      }
+    }
+
     setError('');
     setStep(2);
   }
@@ -227,6 +248,42 @@ export default function IssuerFlow({ onBack }) {
               </div>
             </div>
 
+            {/* Reserve Addresses Input */}
+            <div className="vz-card input-card">
+              <div className="input-header">
+                <h3>🔒 Reserve Address Commitment</h3>
+                <span className="info-badge" title="Cryptographically bind proof to specific addresses">ℹ️</span>
+              </div>
+
+              <p className="explainer-text">
+                Enter the Stellar addresses that hold your reserves. The proof will be cryptographically bound
+                to these addresses, preventing manipulation after generation.
+              </p>
+
+              <label className="input-label">
+                Reserve Addresses (1-5 addresses, comma or space separated)
+                <span className="privacy-note">🔗 Addresses are committed in the proof</span>
+              </label>
+
+              <textarea
+                className="vz-input balance-input mono"
+                value={reserveAddresses}
+                onChange={(e) => setReserveAddresses(e.target.value)}
+                placeholder="GABCDEFGHIJ..., GXYZABC..."
+                rows={2}
+              />
+
+              <div className="balance-status">
+                {reserveAddresses.split(/[\s,]+/).filter(Boolean).length > 0 ? (
+                  <span className="badge badge-success">
+                    ✓ {reserveAddresses.split(/[\s,]+/).filter(Boolean).length} address(es) configured
+                  </span>
+                ) : (
+                  <span className="badge badge-error">⚠ At least 1 address required</span>
+                )}
+              </div>
+            </div>
+
             {/* Contract ID */}
             <div className="card">
               <h3>Solvency Policy Contract</h3>
@@ -242,7 +299,7 @@ export default function IssuerFlow({ onBack }) {
             <button
               className="vz-btn vz-btn-primary btn-large"
               onClick={startProofGeneration}
-              disabled={count !== N || !contractId}
+              disabled={count !== N || !contractId || !reserveAddresses.trim()}
             >
               Generate Zero-Knowledge Proof
             </button>
@@ -255,6 +312,7 @@ export default function IssuerFlow({ onBack }) {
             balances={balanceList}
             contractId={contractId}
             address={publicKey}
+            reserveAddresses={reserveAddresses.split(/[\s,]+/).filter(Boolean)}
             onSuccess={handleProofSuccess}
             onError={handleProofError}
           />
