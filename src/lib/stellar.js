@@ -122,14 +122,27 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress, s
     );
   }
 
+  console.log(`[attest] Preparing transaction...`);
+  console.log(`  Public inputs length: ${publicInputs.length} bytes`);
+  console.log(`  Proof length: ${proof.length} bytes`);
+  console.log(`  Contract ID: ${contractId}`);
+
   const account = await rpc.getAccount(sourceAddress);
   const contract = new Contract(contractId);
+
+  const piScVal = bytesToScVal(publicInputs);
+  const proofScVal = bytesToScVal(proof);
+
+  console.log(`[attest] ScVal types:`, {
+    piType: piScVal?.switch?.()?.name,
+    proofType: proofScVal?.switch?.()?.name
+  });
 
   let tx = new TransactionBuilder(account, {
     fee: BASE_FEE,
     networkPassphrase: config.networkPassphrase,
   })
-    .addOperation(contract.call("attest", bytesToScVal(publicInputs), bytesToScVal(proof)))
+    .addOperation(contract.call("attest", piScVal, proofScVal))
     .setTimeout(60)
     .build();
 
