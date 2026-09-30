@@ -225,7 +225,11 @@ export async function hashReserveAddresses(addresses) {
   const hashResult = api.pedersenHash(frArray, 0); // Generator index 0 (default)
 
   // Convert Fr result to decimal string
-  const hashBigInt = hashResult.toBigInt();
+  // Fr.value is a Uint8Array, convert it to BigInt using big-endian
+  let hashBigInt = 0n;
+  for (const byte of hashResult.value) {
+    hashBigInt = (hashBigInt << 8n) | BigInt(byte);
+  }
   const reserveAddressesHash = hashBigInt.toString();
 
   console.log("🔑 Pedersen hash computed:");
