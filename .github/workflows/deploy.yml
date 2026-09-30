@@ -88,6 +88,8 @@ jobs:
 
           # Trigger deployment if needed
           if [ "$TRIGGER_DEPLOY" = "true" ]; then
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git fetch origin gh-pages
             git checkout gh-pages
             git commit --allow-empty -m "chore: trigger Pages deployment (auto-recovery)"
