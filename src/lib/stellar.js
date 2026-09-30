@@ -11,7 +11,6 @@ import {
   BASE_FEE,
   xdr,
   scValToNative,
-  nativeToScVal,
 } from "@stellar/stellar-sdk";
 import { Server, Api } from "@stellar/stellar-sdk/rpc";
 
@@ -47,14 +46,6 @@ function parseContractError(message) {
     }
   }
   return null;
-}
-
-function bytesToScVal(bytes) {
-  if (!(bytes instanceof Uint8Array)) {
-    throw new Error(`bytesToScVal expects Uint8Array, got ${typeof bytes}`);
-  }
-  // Use nativeToScVal with type 'bytes' to create proper ScVal (matching verifier scripts pattern)
-  return nativeToScVal(bytes, { type: 'bytes' });
 }
 
 /**
@@ -132,19 +123,15 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress, s
   const account = await rpc.getAccount(sourceAddress);
   const contract = new Contract(contractId);
 
-  const piScVal = bytesToScVal(publicInputs);
-  const proofScVal = bytesToScVal(proof);
-
-  console.log(`[attest] ScVal types:`, {
-    piType: piScVal?.switch?.()?.name,
-    proofType: proofScVal?.switch?.()?.name
-  });
+  // Contract.call() in stellar-sdk v17 accepts native JS values directly
+  // and converts them internally - no need for manual ScVal conversion
+  console.log(`[attest] Passing bytes directly to contract.call()`);
 
   let tx = new TransactionBuilder(account, {
     fee: BASE_FEE,
     networkPassphrase: config.networkPassphrase,
   })
-    .addOperation(contract.call("attest", piScVal, proofScVal))
+    .addOperation(contract.call("attest", publicInputs, proof))
     .setTimeout(60)
     .build();
 
