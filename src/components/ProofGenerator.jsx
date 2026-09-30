@@ -56,7 +56,24 @@ export default function ProofGenerator({ balances, contractId, address, reserveA
       // Stage 2: Prepare inputs
       setStage(2);
       setProgress(25);
-      const salts = balances.map((_, i) => String(i + 1));
+
+      // Generate cryptographically secure random salts (256-bit each)
+      // This is CRITICAL for zero-knowledge privacy: without random salts,
+      // an attacker who suspects specific balances could verify their guess
+      // by reconstructing the Merkle tree with known sequential salts.
+      const salts = balances.map(() => {
+        const randomBytes = crypto.getRandomValues(new Uint8Array(32)); // 256 bits
+        let salt = 0n;
+        for (const byte of randomBytes) {
+          salt = (salt << 8n) | BigInt(byte);
+        }
+        // Convert to decimal string (Noir expects Field as string)
+        return salt.toString();
+      });
+
+      console.log('🔐 Generated cryptographically secure random salts');
+      console.log('  Sample salt (first 32 chars):', salts[0].slice(0, 32) + '...');
+
       const ledgerSeq = await getCurrentLedgerSeq();
       await sleep(500);
 

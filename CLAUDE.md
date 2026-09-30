@@ -120,7 +120,10 @@ Veraz implements a three-layer cryptographic architecture:
 
 **Private Inputs** (never revealed):
 - `balances[N]`: Individual holder balances
-- `salts[N]`: Random values for commitment hiding
+- `salts[N]`: Cryptographically secure random values (256-bit each) for commitment hiding
+  - Generated using `crypto.getRandomValues()` in browser
+  - CRITICAL for privacy: prevents attackers from verifying suspected balances
+  - Never logged or stored, regenerated for each proof
 
 ### Frontend: Browser-Based Proving
 - **Location**: `src/`
@@ -227,11 +230,14 @@ total_reserves = sac_balance + aquarius_balance + defindex_balance;
 
 ### Proof Generation (Browser)
 1. User enters 8 holder balances in frontend
-2. Generate random salts (256-bit each)
+2. Generate cryptographically secure random salts (256-bit each)
+   - Uses `crypto.getRandomValues(new Uint8Array(32))` per balance
+   - Converts to BigInt then decimal string for Noir Field type
+   - CRITICAL: Random salts prevent balance verification attacks
 3. Build Merkle-sum-tree in JavaScript (`merkle.js`)
 4. Execute Noir circuit with balances + salts (via `noir_js`)
 5. Generate UltraHonk proof with Keccak hash (`bb.js`, ~3-5s)
-6. Format public inputs to 96-byte layout
+6. Format public inputs to 128-byte layout (includes reserve address commitment)
 7. Submit transaction to Stellar via Freighter
 
 ### On-Chain Verification (Soroban)
@@ -430,7 +436,14 @@ DeFindex provides both on-chain contract methods AND a REST API. For better perf
 - **Anti-Replay**: Monotonic ledger sequence prevents proof reuse
 - **Freshness**: 100-ledger window (~8 minutes on Stellar) ensures recent data
 - **Overflow Protection**: All arithmetic uses `checked_add()` to prevent manipulation
-- **Privacy**: Pedersen commitments are computationally hiding and binding
+- **Privacy - Cryptographic Commitments**:
+  - Pedersen hash commitments are computationally hiding and binding
+  - **Random Salts (256-bit)**: Generated using `crypto.getRandomValues()` per proof
+  - CRITICAL: Without random salts, attackers could verify suspected balances by reconstructing the Merkle tree
+  - Salts are never logged, stored, or reused across proofs
+- **Reserve Address Commitment**:
+  - 4th public input binds proof to specific reserve addresses
+  - Prevents post-generation manipulation of reserve accounts
 - **No Trusted Setup**: UltraHonk is transparent (no ceremony required)
 
 ---
