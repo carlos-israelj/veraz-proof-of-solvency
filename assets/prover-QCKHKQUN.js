@@ -1,7 +1,7 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./merkle-BrnoBKvK.js","./index-r3JVd0VA.js","./index-DKxV6pmJ.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
-import { _ as Bn, __tla as __tla_0 } from "./index-DKxV6pmJ.js";
-import { UltraHonkBackend as Un, __tla as __tla_1 } from "./index-r3JVd0VA.js";
-import { hashReserveAddresses as Zn, __tla as __tla_2 } from "./stellar-DUYK7Tef.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./merkle-CwbgY5IT.js","./index-SHGFpzp7.js","./index-CIyZ2DQz.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
+import { _ as Bn, __tla as __tla_0 } from "./index-CIyZ2DQz.js";
+import { UltraHonkBackend as Un, __tla as __tla_1 } from "./index-SHGFpzp7.js";
+import { hashReserveAddresses as Zn, __tla as __tla_2 } from "./stellar-C4vjLHe1.js";
 let zs;
 let __tla = Promise.all([
     (()=>{
@@ -2636,7 +2636,7 @@ fn test_reserve_address_commitment() {
         const { reserveAddressesHash: i, paddedAddresses: r } = await Zn(s);
         console.log("  reserve_addresses_hash:", i), console.log("  num_reserve_accounts:", s.length), console.log("🌳 Calculando Merkle sum-tree...");
         const { buildMerkleTree: l } = await Bn(async ()=>{
-            const { buildMerkleTree: m } = await import("./merkle-BrnoBKvK.js");
+            const { buildMerkleTree: m } = await import("./merkle-CwbgY5IT.js");
             return {
                 buildMerkleTree: m
             };
