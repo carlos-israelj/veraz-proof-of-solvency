@@ -57,16 +57,29 @@ export default function ProofGenerator({ balances, contractId, address, reserveA
       setStage(2);
       setProgress(25);
 
-      // Generate cryptographically secure random salts (256-bit each)
+      // Generate cryptographically secure random salts (within BN254 field)
       // This is CRITICAL for zero-knowledge privacy: without random salts,
       // an attacker who suspects specific balances could verify their guess
       // by reconstructing the Merkle tree with known sequential salts.
+      // BN254 field modulus: 21888242871839275222246405745257275088548364400416034343698204186575808495617
+      const BN254_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
+
       const salts = balances.map(() => {
-        const randomBytes = crypto.getRandomValues(new Uint8Array(32)); // 256 bits
+        // Generate 254-bit random number (to stay safely under BN254 modulus)
+        const randomBytes = crypto.getRandomValues(new Uint8Array(31)); // 248 bits
         let salt = 0n;
         for (const byte of randomBytes) {
           salt = (salt << 8n) | BigInt(byte);
         }
+        // Add some extra random bits but ensure it's less than modulus
+        const extraBits = BigInt(crypto.getRandomValues(new Uint8Array(1))[0]);
+        salt = (salt << 8n) | extraBits;
+
+        // Ensure salt is less than BN254 modulus (should always be true with 254 bits, but double-check)
+        if (salt >= BN254_MODULUS) {
+          salt = salt % BN254_MODULUS;
+        }
+
         // Convert to decimal string (Noir expects Field as string)
         return salt.toString();
       });
