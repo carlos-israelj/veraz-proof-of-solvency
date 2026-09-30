@@ -169,7 +169,8 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress, s
 }
 
 /**
- * Hash reserve addresses using SHA256 (matching smart contract implementation)
+ * Hash reserve addresses using Pedersen hash (matching Noir circuit implementation)
+ * CRITICAL: Must use the SAME hashing method as the circuit (std::hash::pedersen_hash)
  * Returns hash and padded addresses array for circuit input
  * @param {string[]} addresses - Array of Stellar addresses
  * @returns {Promise<{reserveAddressesHash: string, paddedAddresses: string[]}>}
@@ -187,10 +188,14 @@ export async function hashReserveAddresses(addresses) {
     throw new Error(`Maximum ${MAX_RESERVE_ACCOUNTS} reserve addresses allowed`);
   }
 
-  // Convert addresses to field elements (hash each address)
+  // Dynamically import Barretenberg for Pedersen hash
+  const { BarretenbergSync, Fr } = await import("@aztec/bb.js");
+  const api = await BarretenbergSync.initSingleton();
+
+  // Convert Stellar addresses to field elements via SHA-256 (deterministic)
   const addrFields = [];
   for (const addr of addresses) {
-    // Hash the address string to get a field element
+    // Hash the address string to get a deterministic field element
     const encoder = new TextEncoder();
     const data = encoder.encode(addr);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -208,34 +213,28 @@ export async function hashReserveAddresses(addresses) {
     addrFields.push(fieldValue.toString());
   }
 
-  // Pad with zeros to MAX_RESERVE_ACCOUNTS
+  // Pad with zeros to MAX_RESERVE_ACCOUNTS (must match circuit's array size)
   while (addrFields.length < MAX_RESERVE_ACCOUNTS) {
     addrFields.push("0");
   }
 
-  // Compute combined hash (simulating Pedersen hash in circuit)
-  // Concatenate all field hashes and hash again
-  let combined = "";
-  for (const field of addrFields) {
-    combined += field;
-  }
+  // CRITICAL: Compute Pedersen hash using Barretenberg (same as Noir circuit)
+  // Circuit uses: std::hash::pedersen_hash(reserve_addresses)
+  // We must use the same hash function and generator index (0 is default)
+  const frArray = addrFields.map(f => new Fr(BigInt(f)));
+  const hashResult = api.pedersenHash(frArray, 0); // Generator index 0 (default)
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode(combined);
-  const finalHashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const finalHashArray = Array.from(new Uint8Array(finalHashBuffer));
+  // Convert Fr result to decimal string
+  const hashBigInt = hashResult.toBigInt();
+  const reserveAddressesHash = hashBigInt.toString();
 
-  // Convert final hash to BigInt
-  let finalHash = 0n;
-  for (const byte of finalHashArray) {
-    finalHash = (finalHash << 8n) | BigInt(byte);
-  }
-
-  // CRITICAL: Reduce to BN254 field modulus
-  finalHash = finalHash % BN254_MODULUS;
+  console.log("🔑 Pedersen hash computed:");
+  console.log("  Input addresses:", addresses);
+  console.log("  Field elements:", addrFields);
+  console.log("  Pedersen hash:", reserveAddressesHash);
 
   return {
-    reserveAddressesHash: finalHash.toString(),
+    reserveAddressesHash,
     paddedAddresses: addrFields,
   };
 }
