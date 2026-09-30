@@ -4,4 +4,4 @@ type = "bin"
 authors = [""]
 
 [dependencies]
-# Using std library for pedersen hash instead of poseidon for compatibility
+poseidon = { path = "../poseidon" }

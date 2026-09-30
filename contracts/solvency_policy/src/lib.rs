@@ -12,8 +12,10 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, contracterror, contractmeta,
-    token::TokenClient, Address, Bytes, Env, Vec, Symbol, IntoVal,
+    token::TokenClient, Address, Bytes, Env, Vec, Symbol, IntoVal, U256,
 };
+use soroban_poseidon::poseidon2_hash;
+use soroban_sdk::crypto::bn254::Bn254Fr;
 
 // Metadata del contrato
 contractmeta!(
@@ -313,45 +315,50 @@ impl SolvencyPolicy {
     /// Calcula el hash de las reserve addresses usando SHA256 (matching circuit implementation)
     /// Retorna Bytes de 32 bytes
     fn hash_reserve_addresses(env: &Env, addresses: &Vec<Address>) -> Bytes {
-        // Convert addresses to field elements (matching Noir's Field type)
-        // We'll use SHA256 hash of each address as a field element representation
-        let mut addr_fields = Vec::new(env);
+        const MAX_RESERVE_ACCOUNTS: u32 = 5;
+        const BN254_MODULUS_HEX: &str = "30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001";
 
+        let mut addr_fields = Vec::new(env);
+        let bn254_mod = U256::from_be_hex(env, BN254_MODULUS_HEX);
+
+        // Convert addresses to U256 field elements
         for addr in addresses.iter() {
-            // Convert address to bytes by using to_val() and then converting to bytes
-            // Simple approach: use the address XDR representation
             let addr_val = addr.to_val();
             let mut addr_bytes = Bytes::new(env);
-
-            // Convert Val to u64 and then to bytes (deterministic representation)
             let val_u64 = addr_val.get_payload();
             let bytes_arr = val_u64.to_be_bytes();
             for b in bytes_arr {
                 addr_bytes.push_back(b);
             }
 
+            // Use SHA-256 to derive a field element from address bytes
             let hash_value = env.crypto().sha256(&addr_bytes);
-            // Convert Hash<32> to Bytes
-            let hash_bytes: Bytes = hash_value.into();
-            addr_fields.push_back(hash_bytes);
+
+            // Convert hash (32 bytes) to U256
+            let mut field_value = U256::from_u32(env, 0);
+            for byte in hash_value.iter() {
+                field_value = field_value.mul(&U256::from_u32(env, 256));
+                field_value = field_value.add(&U256::from_u32(env, byte.into()));
+            }
+
+            // Reduce modulo BN254
+            if field_value >= bn254_mod {
+                field_value = field_value.rem_euclid(&bn254_mod);
+            }
+
+            addr_fields.push_back(field_value);
         }
 
-        // Pad with zeros if less than MAX_RESERVE_ACCOUNTS (5)
-        while addr_fields.len() < 5 {
-            let zero_hash: Bytes = Bytes::from_array(env, &[0u8; 32]);
-            addr_fields.push_back(zero_hash);
+        // Pad to MAX_RESERVE_ACCOUNTS with zeros
+        while addr_fields.len() < MAX_RESERVE_ACCOUNTS {
+            addr_fields.push_back(U256::from_u32(env, 0));
         }
 
-        // Concatenate all hashes and hash the result (simplified Pedersen simulation)
-        let mut combined = Bytes::new(env);
-        for field in addr_fields.iter() {
-            combined.append(&field);
-        }
+        // Use Poseidon2 hash (matches circuit!)
+        let hash_result = poseidon2_hash::<4, Bn254Fr>(env, &addr_fields);
 
-        // Final hash (this simulates Pedersen hash in Noir)
-        // Convert Hash<32> to Bytes
-        let final_hash = env.crypto().sha256(&combined);
-        final_hash.into()
+        // Convert U256 to Bytes (32 bytes big-endian)
+        hash_result.to_be_bytes(env)
     }
 }
 

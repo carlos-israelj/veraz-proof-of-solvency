@@ -219,11 +219,11 @@ export async function hashReserveAddresses(addresses) {
     addrFields.push("0");
   }
 
-  // CRITICAL: Compute Pedersen hash using Barretenberg (same as Noir circuit)
-  // Circuit uses: std::hash::pedersen_hash(reserve_addresses)
-  // We must use the same hash function and generator index (0 is default)
+  // CRITICAL: Compute Poseidon2 hash using Barretenberg (same as Noir circuit)
+  // Circuit uses: Poseidon2::hash(reserve_addresses, MAX_RESERVE_ACCOUNTS)
+  // This matches Soroban contract using poseidon2_hash (CAP-75 standard)
   const frArray = addrFields.map(f => new Fr(BigInt(f)));
-  const hashResult = api.pedersenHash(frArray, 0); // Generator index 0 (default)
+  const hashResult = api.poseidon2Hash(frArray); // Poseidon2 hash
 
   // Convert Fr result to decimal string
   // Fr.value is a Uint8Array, convert it to BigInt using big-endian
@@ -233,10 +233,10 @@ export async function hashReserveAddresses(addresses) {
   }
   const reserveAddressesHash = hashBigInt.toString();
 
-  console.log("🔑 Pedersen hash computed:");
+  console.log("🔑 Poseidon2 hash computed:");
   console.log("  Input addresses:", addresses);
   console.log("  Field elements:", addrFields);
-  console.log("  Pedersen hash:", reserveAddressesHash);
+  console.log("  Poseidon2 hash:", reserveAddressesHash);
 
   return {
     reserveAddressesHash,

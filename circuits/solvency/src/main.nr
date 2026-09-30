@@ -12,6 +12,7 @@
 // Contract (off-circuit) checks R >= L by reading reserves live from ledger
 
 use dep::std;
+use dep::poseidon::poseidon2::Poseidon2;
 
 global N: u32 = 8;            // Number of holders (power of 2). Scale up for production (8 = demo).
 global TREE: u32 = 2 * N - 1; // Nodes in heap-indexed tree
@@ -72,7 +73,8 @@ fn main(
     // NEW: Verify reserve addresses commitment
     // Hash the reserve addresses to ensure they match the public commitment
     // This prevents the issuer from changing addresses after proof generation
-    let computed_hash = std::hash::pedersen_hash(reserve_addresses);
+    // Using Poseidon2 for compatibility with Soroban (CAP-75 standard)
+    let computed_hash = Poseidon2::hash(reserve_addresses, MAX_RESERVE_ACCOUNTS);
     assert(computed_hash == reserve_addresses_hash);
 
     // Ensure num_reserve_accounts is within valid range
@@ -95,8 +97,8 @@ fn test_well_formed_tree_sums() {
     ];
     let num_reserve_accounts = 3;
 
-    // Compute reserve addresses hash
-    let reserve_hash = std::hash::pedersen_hash(reserve_addresses);
+    // Compute reserve addresses hash with Poseidon2
+    let reserve_hash = Poseidon2::hash(reserve_addresses, MAX_RESERVE_ACCOUNTS);
 
     // Recalculate root with same logic for test
     let mut node_hash: [Field; TREE] = [0; TREE];
