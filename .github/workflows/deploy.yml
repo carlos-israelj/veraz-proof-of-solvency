@@ -56,33 +56,43 @@ jobs:
           sleep 30
 
           # Check if a Pages deployment was triggered in the last 2 minutes
-          PAGES_RUN=$(gh run list --workflow="pages-build-deployment" --limit 1 --json createdAt,status --jq '.[0]')
-          CREATED_AT=$(echo $PAGES_RUN | jq -r '.createdAt')
-          STATUS=$(echo $PAGES_RUN | jq -r '.status')
+          PAGES_RUN=$(gh run list --workflow="pages-build-deployment" --limit 1 --json createdAt,status 2>&1)
 
-          # Calculate time difference
-          CREATED_TIMESTAMP=$(date -d "$CREATED_AT" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$CREATED_AT" +%s)
-          CURRENT_TIMESTAMP=$(date +%s)
-          TIME_DIFF=$((CURRENT_TIMESTAMP - CREATED_TIMESTAMP))
+          if echo "$PAGES_RUN" | grep -q "no runs found"; then
+            echo "⚠️  No Pages deployments found. Forcing first deployment..."
+            TRIGGER_DEPLOY=true
+          else
+            CREATED_AT=$(echo $PAGES_RUN | jq -r '.[0].createdAt')
+            STATUS=$(echo $PAGES_RUN | jq -r '.[0].status')
 
-          echo "Last Pages deployment: $CREATED_AT (${TIME_DIFF}s ago)"
-          echo "Status: $STATUS"
+            # Simple time check using Python (available in ubuntu-latest)
+            TIME_DIFF=$(python3 -c "
+          from datetime import datetime
+          created = datetime.fromisoformat('${CREATED_AT}'.replace('Z', '+00:00'))
+          now = datetime.now(created.tzinfo)
+          print(int((now - created).total_seconds()))
+          ")
 
-          # If no recent deployment or stuck in queue, trigger manually
-          if [ $TIME_DIFF -gt 120 ] || [ "$STATUS" = "queued" ]; then
-            echo "⚠️  Pages deployment not triggered or stuck. Forcing redeploy..."
+            echo "Last Pages deployment: $CREATED_AT (${TIME_DIFF}s ago)"
+            echo "Status: $STATUS"
 
-            # Fetch latest gh-pages
+            # If no recent deployment or stuck in queue, trigger manually
+            if [ $TIME_DIFF -gt 120 ] || [ "$STATUS" = "queued" ]; then
+              echo "⚠️  Pages deployment not triggered or stuck. Forcing redeploy..."
+              TRIGGER_DEPLOY=true
+            else
+              echo "✅ Pages deployment is active"
+              TRIGGER_DEPLOY=false
+            fi
+          fi
+
+          # Trigger deployment if needed
+          if [ "$TRIGGER_DEPLOY" = "true" ]; then
             git fetch origin gh-pages
-
-            # Create empty commit to trigger Pages
             git checkout gh-pages
             git commit --allow-empty -m "chore: trigger Pages deployment (auto-recovery)"
             git push origin gh-pages
-
             echo "✅ Forced Pages deployment triggered"
-          else
-            echo "✅ Pages deployment is active"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
