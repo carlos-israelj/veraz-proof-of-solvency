@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./index-B8F1AVu4.js","./index-Bt1osp3T.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
-import { N as _, R as O, C as m, T as y, B as A, A as T, _ as U, a as N, s as b, S as P, __tla as __tla_0 } from "./index-Bt1osp3T.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./index-BzKFoebV.js","./index-4rA93MZs.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
+import { N as _, R as O, C as m, T as p, B as A, A as T, _ as U, a as N, s as b, S as P, __tla as __tla_0 } from "./index-4rA93MZs.js";
 let $, g, x, k, M;
 let __tla = Promise.all([
     (()=>{
@@ -8,14 +8,14 @@ let __tla = Promise.all([
         } catch  {}
     })()
 ]).then(async ()=>{
-    let l, q, B;
+    let l, q, V;
     g = {
         rpcUrl: "https://soroban-testnet.stellar.org",
         networkPassphrase: _.TESTNET
     };
     l = new O(g.rpcUrl);
     q = "GB6NVEN5HSUBKMYCE5ZOWSK5K23TBWRUQLZY3KNMXUZ3AQ2ESC4MY4AQ";
-    B = {
+    V = {
         "Error(Contract, #1)": "El contrato ya fue inicializado.",
         "Error(Contract, #2)": "El contrato no ha sido inicializado.",
         "Error(Contract, #3)": "Public inputs con formato incorrecto. Deben ser exactamente 128 bytes (root + liabilities + ledger_seq + reserve_addresses_hash).",
@@ -25,8 +25,8 @@ let __tla = Promise.all([
         "Error(Contract, #12)": "Insolvente: las reservas on-chain son menores que los pasivos probados.",
         "Error(Contract, #13)": "Overflow en la suma de pasivos o reservas."
     };
-    function w(e) {
-        for (const [t, o] of Object.entries(B))if (e && e.includes(t)) return `❌ ${o}`;
+    function S(e) {
+        for (const [t, o] of Object.entries(V))if (e && e.includes(t)) return `❌ ${o}`;
         return null;
     }
     function v(e) {
@@ -39,7 +39,7 @@ let __tla = Promise.all([
     M = async function(e) {
         try {
             console.log("[querySolvent] Iniciando consulta para contractId:", e);
-            const t = new N(q, "0"), o = new m(e), u = new y(t, {
+            const t = new N(q, "0"), o = new m(e), u = new p(t, {
                 fee: A,
                 networkPassphrase: g.networkPassphrase
             }).addOperation(o.call("is_solvent")).setTimeout(30).build();
@@ -47,7 +47,7 @@ let __tla = Promise.all([
             const a = await l.simulateTransaction(u);
             if (console.log("[querySolvent] Resultado de simulación:", a), T.isSimulationError(a)) {
                 console.error("[querySolvent] Error en simulación:", a.error);
-                const i = w(a.error);
+                const i = S(a.error);
                 throw new Error(i || `Simulación falló: ${a.error}`);
             }
             const d = a.result?.retval;
@@ -63,26 +63,26 @@ let __tla = Promise.all([
         if (!(o instanceof Uint8Array) || o.length === 0) throw new Error("Proof inválido: el proof está vacío o no es un Uint8Array.");
         o.length !== 14592 && console.warn(`⚠️ Proof size: ${o.length} bytes (esperados 14592 para UltraHonk). El verifier on-chain determinará si es válido.`);
         const d = await l.getAccount(u), n = new m(e);
-        let i = new y(d, {
+        let i = new p(d, {
             fee: A,
             networkPassphrase: g.networkPassphrase
         }).addOperation(n.call("attest", v(t), v(o))).setTimeout(60).build();
         const f = await l.simulateTransaction(i);
         if (T.isSimulationError(f)) {
-            const s = w(f.error);
+            const s = S(f.error);
             throw new Error(s || `Simulación falló: ${f.error}`);
         }
         i = await l.prepareTransaction(i);
-        const p = await a(i.toXdr()), E = y.fromXdr(p, g.networkPassphrase), r = await l.sendTransaction(E);
+        const h = await a(i.toXdr()), w = p.fromXdr(h, g.networkPassphrase), r = await l.sendTransaction(w);
         if (r.status === "ERROR") {
-            const s = w(JSON.stringify(r.errorResult));
+            const s = S(JSON.stringify(r.errorResult));
             throw new Error(s || `Envío falló: ${JSON.stringify(r.errorResult)}`);
         }
         let c = await l.getTransaction(r.hash);
         for(; c.status === "NOT_FOUND";)await new Promise((s)=>setTimeout(s, 1e3)), c = await l.getTransaction(r.hash);
         if (c.status !== "SUCCESS") {
-            const s = JSON.stringify(c), S = w(s);
-            throw new Error(S || `Transacción falló: ${c.status}`);
+            const s = JSON.stringify(c), y = S(s);
+            throw new Error(y || `Transacción falló: ${c.status}`);
         }
         return console.log("✅ Transacción confirmada on-chain:", r.hash), {
             hash: r.hash
@@ -93,7 +93,7 @@ let __tla = Promise.all([
         if (!e || e.length === 0) throw new Error("At least one reserve address is required");
         if (e.length > 5) throw new Error("Maximum 5 reserve addresses allowed");
         const { BarretenbergSync: u, Fr: a } = await U(async ()=>{
-            const { BarretenbergSync: r, Fr: c } = await import("./index-B8F1AVu4.js").then(async (m)=>{
+            const { BarretenbergSync: r, Fr: c } = await import("./index-BzKFoebV.js").then(async (m)=>{
                 await m.__tla;
                 return m;
             });
@@ -103,15 +103,18 @@ let __tla = Promise.all([
             };
         }, __vite__mapDeps([0,1,2]), import.meta.url), d = await u.initSingleton(), n = [];
         for (const r of e){
-            const s = new TextEncoder().encode(r), S = await crypto.subtle.digest("SHA-256", s), R = Array.from(new Uint8Array(S));
-            let h = 0n;
-            for (const C of R)h = h << 8n | BigInt(C);
-            h = h % o, n.push(h.toString());
+            const s = new TextEncoder().encode(r), y = await crypto.subtle.digest("SHA-256", s), R = Array.from(new Uint8Array(y));
+            let E = 0n;
+            for (const C of R)E = E << 8n | BigInt(C);
+            E = E % o, n.push(E.toString());
         }
         for(; n.length < 5;)n.push("0");
-        const i = n.map((r)=>new a(BigInt(r))), E = d.pedersenHash(i, 0).toBigInt().toString();
-        return console.log("🔑 Pedersen hash computed:"), console.log("  Input addresses:", e), console.log("  Field elements:", n), console.log("  Pedersen hash:", E), {
-            reserveAddressesHash: E,
+        const i = n.map((r)=>new a(BigInt(r))), f = d.pedersenHash(i, 0);
+        let h = 0n;
+        for (const r of f.value)h = h << 8n | BigInt(r);
+        const w = h.toString();
+        return console.log("🔑 Pedersen hash computed:"), console.log("  Input addresses:", e), console.log("  Field elements:", n), console.log("  Pedersen hash:", w), {
+            reserveAddressesHash: w,
             paddedAddresses: n
         };
     };
