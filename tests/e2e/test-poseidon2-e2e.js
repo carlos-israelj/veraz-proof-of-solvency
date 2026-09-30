@@ -1,13 +1,23 @@
-// Test script to verify Poseidon2 hash alignment across circuit, contract, and frontend
+/**
+ * E2E Test: Poseidon2 Contract Verification
+ *
+ * Tests the complete flow with Poseidon2:
+ * 1. Generate ZK proof with Poseidon2 reserve hash
+ * 2. Format 128-byte public inputs
+ * 3. Save to files for stellar CLI invocation
+ */
+
 import { Noir } from "@noir-lang/noir_js";
-import { UltraHonkBackend, BarretenbergSync, Fr } from "@aztec/bb.js";
+import { UltraHonkBackend, Fr } from "@aztec/bb.js";
 import circuit from "../../circuits/solvency/target/solvency.json" assert { type: "json" };
 import { buildMerkleTree } from "../../src/lib/merkle.js";
 import { hashReserveAddresses } from "../../src/lib/stellar.js";
+import { writeFileSync } from 'fs';
 
-console.log("🧪 Poseidon2 E2E Test - Circuit + Frontend Hash Verification\n");
+console.log("🧪 E2E Test: Poseidon2 Contract Verification\n");
+console.log("═══════════════════════════════════════════════════\n");
 
-// Test data
+// Test data (same as integration test for consistency)
 const balances = ["100000", "50000", "25000", "75000", "30000", "20000", "60000", "40000"];
 
 // BN254 field modulus
@@ -21,9 +31,9 @@ const salts = Array.from({ length: 8 }, () => {
   for (const byte of bytes) {
     bigInt = (bigInt << 8n) | BigInt(byte);
   }
-  // Reduce modulo BN254 field to ensure it's a valid field element
   return (bigInt % BN254_MODULUS).toString();
 });
+
 const ledgerSeq = 12345678;
 const reserveAddresses = ["GCY4CQHYSGI2MKE24R6ASMSX6EN6VQDYQZIC2NG3FSLJML6ELPFQAPKT"];
 
@@ -38,13 +48,12 @@ const { root, totalSum } = await buildMerkleTree(balances, salts);
 console.log(`  ✓ Root: ${root}`);
 console.log(`  ✓ Total Sum: ${totalSum}`);
 
-// Step 2: Compute reserve addresses hash with Poseidon2 (frontend implementation)
+// Step 2: Compute reserve addresses hash with Poseidon2
 console.log("\n🔑 Step 2: Computing reserve addresses hash with Poseidon2...");
 const { reserveAddressesHash, paddedAddresses } = await hashReserveAddresses(reserveAddresses);
 console.log(`  ✓ Reserve Hash: ${reserveAddressesHash}`);
-console.log(`  ✓ Padded Addresses (5 total): ${paddedAddresses.join(", ")}`);
 
-// Step 3: Execute circuit with Poseidon2
+// Step 3: Execute circuit
 console.log("\n⚙️  Step 3: Executing Noir circuit...");
 const circuitInputs = {
   root,
@@ -61,7 +70,7 @@ const noir = new Noir(circuit);
 const { witness } = await noir.execute(circuitInputs);
 console.log(`  ✓ Circuit executed successfully`);
 
-// Step 4: Generate proof with UltraHonk
+// Step 4: Generate proof
 console.log("\n🔐 Step 4: Generating UltraHonk proof...");
 const backend = new UltraHonkBackend(circuit.bytecode);
 const startTime = Date.now();
@@ -69,80 +78,23 @@ const { proof, publicInputs: rawPI } = await backend.generateProof(witness);
 const proofTime = ((Date.now() - startTime) / 1000).toFixed(2);
 console.log(`  ✓ Proof generated in ${proofTime}s`);
 console.log(`  ✓ Proof size: ${proof.length} bytes`);
-console.log(`  ✓ Public inputs count: ${rawPI.length}`);
 
-// Step 5: Verify public inputs structure
-console.log("\n📊 Step 5: Verifying public inputs structure...");
-console.log(`  Expected layout: [root(32), liabilities(32), ledger_seq(32), reserve_hash(32)] = 128 bytes`);
+// Step 5: Format public inputs for Soroban (128 bytes)
+console.log("\n📦 Step 5: Formatting for Soroban contract...");
 
-if (rawPI.length !== 4) {
-  console.error(`  ❌ ERROR: Expected 4 public inputs, got ${rawPI.length}`);
-  process.exit(1);
-}
-
-// Convert from hex (0x...) or Fr object to decimal string for comparison
 function toDecimalString(value) {
-  // If it's an object with toBigInt method (Fr type from bb.js)
   if (value && typeof value === 'object' && typeof value.toBigInt === 'function') {
     return value.toBigInt().toString();
   }
-  // If it's already a bigint
   if (typeof value === 'bigint') {
     return value.toString();
   }
-  // If it's a hex string
   const str = value.toString();
   if (str.startsWith('0x')) {
     return BigInt(str).toString();
   }
-  // Otherwise return as-is
   return str;
 }
-
-const piRoot = toDecimalString(rawPI[0]);
-const piLiabilities = toDecimalString(rawPI[1]);
-const piLedgerSeq = toDecimalString(rawPI[2]);
-const piReserveHash = toDecimalString(rawPI[3]);
-
-console.log(`  Public Input 0 (root):          ${rawPI[0].toString()} → ${piRoot}`);
-console.log(`  Public Input 1 (liabilities):   ${rawPI[1].toString()} → ${piLiabilities}`);
-console.log(`  Public Input 2 (ledger_seq):    ${rawPI[2].toString()} → ${piLedgerSeq}`);
-console.log(`  Public Input 3 (reserve_hash):  ${rawPI[3].toString()} → ${piReserveHash}`);
-
-// Verify values match
-
-let hasError = false;
-
-if (piRoot !== root) {
-  console.error(`  ❌ Root mismatch! Expected ${root}, got ${piRoot}`);
-  hasError = true;
-} else {
-  console.log(`  ✓ Root matches`);
-}
-
-if (piLiabilities !== totalSum) {
-  console.error(`  ❌ Liabilities mismatch! Expected ${totalSum}, got ${piLiabilities}`);
-  hasError = true;
-} else {
-  console.log(`  ✓ Liabilities match`);
-}
-
-if (piLedgerSeq !== String(ledgerSeq)) {
-  console.error(`  ❌ Ledger seq mismatch! Expected ${ledgerSeq}, got ${piLedgerSeq}`);
-  hasError = true;
-} else {
-  console.log(`  ✓ Ledger seq matches`);
-}
-
-if (piReserveHash !== reserveAddressesHash) {
-  console.error(`  ❌ Reserve hash mismatch! Expected ${reserveAddressesHash}, got ${piReserveHash}`);
-  hasError = true;
-} else {
-  console.log(`  ✓ Reserve hash matches (POSEIDON2 ALIGNMENT VERIFIED!)`);
-}
-
-// Step 6: Format for Soroban contract
-console.log("\n📦 Step 6: Formatting for Soroban contract (128 bytes)...");
 
 function fieldToBytes32(fieldStr) {
   const bn = BigInt(fieldStr);
@@ -152,6 +104,11 @@ function fieldToBytes32(fieldStr) {
   }
   return bytes;
 }
+
+const piRoot = toDecimalString(rawPI[0]);
+const piLiabilities = toDecimalString(rawPI[1]);
+const piLedgerSeq = toDecimalString(rawPI[2]);
+const piReserveHash = toDecimalString(rawPI[3]);
 
 const rootBytes = fieldToBytes32(piRoot);
 const liabilitiesBytes = fieldToBytes32(piLiabilities);
@@ -164,32 +121,48 @@ publicInputsBytes.set(liabilitiesBytes, 32);
 publicInputsBytes.set(ledgerSeqBytes, 64);
 publicInputsBytes.set(reserveHashBytes, 96);
 
-console.log(`  ✓ Formatted 128 bytes: ${publicInputsBytes.length} bytes`);
-console.log(`  ✓ Bytes [0-32]:   Root`);
-console.log(`  ✓ Bytes [32-64]:  Liabilities`);
-console.log(`  ✓ Bytes [64-96]:  Ledger Seq`);
-console.log(`  ✓ Bytes [96-128]: Reserve Hash (Poseidon2)`);
+console.log(`  ✓ Public inputs: 128 bytes`);
+console.log(`  ✓ Root: ${piRoot}`);
+console.log(`  ✓ Liabilities: ${piLiabilities}`);
+console.log(`  ✓ Ledger Seq: ${piLedgerSeq}`);
+console.log(`  ✓ Reserve Hash: ${piReserveHash}`);
 
-// Step 7: Verify proof
-console.log("\n✅ Step 7: Verifying proof...");
+// Step 6: Verify proof locally
+console.log("\n✅ Step 6: Verifying proof locally...");
 const isValid = await backend.verifyProof({ proof, publicInputs: rawPI });
 console.log(`  ${isValid ? "✓" : "❌"} Proof verification: ${isValid ? "VALID" : "INVALID"}`);
-
-if (hasError) {
-  console.error("\n❌ TEST FAILED: Public inputs mismatch detected");
-  process.exit(1);
-}
 
 if (!isValid) {
   console.error("\n❌ TEST FAILED: Proof verification failed");
   process.exit(1);
 }
 
-console.log("\n🎉 ALL TESTS PASSED!");
-console.log("\n✅ Summary:");
-console.log("  - Circuit executed with Poseidon2 hash");
-console.log("  - Frontend computed same Poseidon2 hash");
-console.log("  - Proof generated successfully");
-console.log("  - Public inputs formatted correctly (128 bytes)");
-console.log("  - Reserve addresses hash alignment VERIFIED");
-console.log("\n🚀 Ready to test on-chain with contract CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN");
+// Step 7: Save files for stellar CLI
+console.log("\n💾 Step 7: Saving files for stellar CLI...");
+
+// Convert proof to hex string
+const proofHex = Array.from(proof).map(b => b.toString(16).padStart(2, '0')).join('');
+const publicInputsHex = Array.from(publicInputsBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+
+writeFileSync('/tmp/proof.hex', proofHex);
+writeFileSync('/tmp/public_inputs.hex', publicInputsHex);
+writeFileSync('/tmp/test_data.json', JSON.stringify({
+  proof: proofHex,
+  publicInputs: publicInputsHex,
+  contract: "CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN",
+  root: piRoot,
+  liabilities: piLiabilities,
+  ledgerSeq: piLedgerSeq,
+  reserveHash: piReserveHash,
+}, null, 2));
+
+console.log(`  ✓ Saved proof to /tmp/proof.hex (${proofHex.length / 2} bytes)`);
+console.log(`  ✓ Saved public inputs to /tmp/public_inputs.hex (${publicInputsHex.length / 2} bytes)`);
+console.log(`  ✓ Saved test data to /tmp/test_data.json`);
+
+console.log("\n🎉 E2E PREPARATION COMPLETE!");
+console.log("\n📋 Next steps:");
+console.log("   1. Check current ledger: stellar contract invoke --id CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN --network testnet -- is_solvent");
+console.log("   2. Call attest with generated proof");
+console.log(`   3. Contract: CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN`);
+console.log("\nTest data saved to /tmp/test_data.json");

@@ -13,7 +13,7 @@
 
 import { Noir } from "@noir-lang/noir_js";
 import { UltraHonkBackend } from "@aztec/bb.js";
-import circuit from "../solvency.json";
+import circuit from "../solvency.json" assert { type: "json" };
 import { hashReserveAddresses } from "./stellar.js";
 
 const N = 8; // debe coincidir con el circuito

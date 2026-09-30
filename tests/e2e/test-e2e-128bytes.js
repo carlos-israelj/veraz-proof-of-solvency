@@ -8,12 +8,12 @@
  * 4. Verify on-chain success
  */
 
-import { generateSolvencyProof } from './src/lib/prover.js';
-import { attest, getCurrentLedgerSeq } from './src/lib/stellar.js';
+import { generateSolvencyProof } from '../../src/lib/prover.js';
+import { attest, getCurrentLedgerSeq } from '../../src/lib/stellar.js';
 import { Contract, SorobanRpc, Keypair } from '@stellar/stellar-sdk';
 
 const CONFIG = {
-  contractId: 'CADFYWTVXQ5WKWPEOI5VYQ55ICQFNHLLGNSH2ETM2GXNBPFWDLW7NRRX',
+  contractId: 'CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN', // Updated with Poseidon2 contract
   network: 'testnet',
   rpcUrl: 'https://soroban-testnet.stellar.org',
 };
