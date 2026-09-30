@@ -11,8 +11,8 @@
 //! - Implementa frescura + anti-replay
 
 use soroban_sdk::{
-    contract, contractimpl, contracttype, contracterror, contractmeta,
-    token::TokenClient, Address, Bytes, Env, Vec, Symbol, IntoVal, U256,
+    contract, contractimpl, contracttype, contracterror, contractmeta, bytesn,
+    token::TokenClient, Address, Bytes, Env, Vec, Symbol, U256,
 };
 use soroban_poseidon::poseidon2_hash;
 use soroban_sdk::crypto::bn254::Bn254Fr;
@@ -312,14 +312,21 @@ impl SolvencyPolicy {
         Ok((l_value, seq_value, reserve_hash_bytes))
     }
 
-    /// Calcula el hash de las reserve addresses usando SHA256 (matching circuit implementation)
+    /// Calcula el hash de las reserve addresses usando Poseidon2 (matching circuit implementation)
     /// Retorna Bytes de 32 bytes
     fn hash_reserve_addresses(env: &Env, addresses: &Vec<Address>) -> Bytes {
         const MAX_RESERVE_ACCOUNTS: u32 = 5;
-        const BN254_MODULUS_HEX: &str = "30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001";
 
         let mut addr_fields = Vec::new(env);
-        let bn254_mod = U256::from_be_hex(env, BN254_MODULUS_HEX);
+        // BN254 scalar field modulus
+        let bn254_mod = U256::from_be_bytes(
+            env,
+            &bytesn!(
+                env,
+                0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
+            )
+            .into(),
+        );
 
         // Convert addresses to U256 field elements
         for addr in addresses.iter() {
@@ -336,8 +343,9 @@ impl SolvencyPolicy {
 
             // Convert hash (32 bytes) to U256
             let mut field_value = U256::from_u32(env, 0);
-            for byte in hash_value.iter() {
+            for i in 0..32 {
                 field_value = field_value.mul(&U256::from_u32(env, 256));
+                let byte = hash_value.to_array()[i as usize];
                 field_value = field_value.add(&U256::from_u32(env, byte.into()));
             }
 
@@ -358,7 +366,7 @@ impl SolvencyPolicy {
         let hash_result = poseidon2_hash::<4, Bn254Fr>(env, &addr_fields);
 
         // Convert U256 to Bytes (32 bytes big-endian)
-        hash_result.to_be_bytes(env)
+        hash_result.to_be_bytes()
     }
 }
 

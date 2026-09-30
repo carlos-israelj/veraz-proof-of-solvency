@@ -4,7 +4,7 @@ import ProofGenerator from './ProofGenerator';
 import ShieldAnimation from './ShieldAnimation';
 
 const N = 8; // Circuit supports 8 holders
-const DEFAULT_CONTRACT = 'CBFMOAIIJW44S6LQVBCV7ONSOHE2MFLMBBMBTLBASETUJWJAU7KSRS5Y'; // Redeployed 2026-09-30 with verified 128-byte support
+const DEFAULT_CONTRACT = 'CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN'; // Redeployed 2026-09-30 with Poseidon2 hash (CAP-75)
 
 export default function IssuerFlow({ onBack }) {
   const { publicKey, isConnected, connectWallet: walletConnect, disconnect } = useWallet();
