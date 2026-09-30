@@ -35,6 +35,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Add .nojekyll to disable Jekyll processing
+        run: touch dist/.nojekyll
+
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -44,3 +47,5 @@ jobs:
           commit_message: "deploy: automatic deployment from ${{ github.sha }}"
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+          enable_jekyll: false
+          cname: veraz-pos.xyz
