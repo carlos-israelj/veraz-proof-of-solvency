@@ -4,7 +4,7 @@ import ProofGenerator from './ProofGenerator';
 import ShieldAnimation from './ShieldAnimation';
 
 const N = 8; // Circuit supports 8 holders
-const DEFAULT_CONTRACT = 'CCKXS7YK6H2NAQC4K3TJJMFMKCH7COPFDVSRLZZSZV4RKOEXFVHE7PX6'; // Testnet solvency policy contract
+const DEFAULT_CONTRACT = 'CADFYWTVXQ5WKWPEOI5VYQ55ICQFNHLLGNSH2ETM2GXNBPFWDLW7NRRX'; // Testnet solvency policy contract (128-byte format)
 
 export default function IssuerFlow({ onBack }) {
   const { publicKey, isConnected, connectWallet: walletConnect, disconnect } = useWallet();

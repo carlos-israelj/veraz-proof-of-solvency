@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import AttestationCard from './AttestationCard';
 
-const DEFAULT_CONTRACT = 'CCKXS7YK6H2NAQC4K3TJJMFMKCH7COPFDVSRLZZSZV4RKOEXFVHE7PX6'; // Testnet solvency policy contract
+const DEFAULT_CONTRACT = 'CADFYWTVXQ5WKWPEOI5VYQ55ICQFNHLLGNSH2ETM2GXNBPFWDLW7NRRX'; // Testnet solvency policy contract (128-byte format)
 
 export default function AuditorFlow({ onBack }) {
   const [contractId, setContractId] = useState(DEFAULT_CONTRACT);
