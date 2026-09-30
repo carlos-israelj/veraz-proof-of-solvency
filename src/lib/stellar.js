@@ -176,6 +176,8 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress, s
  */
 export async function hashReserveAddresses(addresses) {
   const MAX_RESERVE_ACCOUNTS = 5;
+  // BN254 field modulus - all field elements must be less than this
+  const BN254_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
 
   if (!addresses || addresses.length === 0) {
     throw new Error("At least one reserve address is required");
@@ -199,6 +201,9 @@ export async function hashReserveAddresses(addresses) {
     for (const byte of hashArray) {
       fieldValue = (fieldValue << 8n) | BigInt(byte);
     }
+
+    // CRITICAL: Reduce to BN254 field modulus
+    fieldValue = fieldValue % BN254_MODULUS;
 
     addrFields.push(fieldValue.toString());
   }
@@ -225,6 +230,9 @@ export async function hashReserveAddresses(addresses) {
   for (const byte of finalHashArray) {
     finalHash = (finalHash << 8n) | BigInt(byte);
   }
+
+  // CRITICAL: Reduce to BN254 field modulus
+  finalHash = finalHash % BN254_MODULUS;
 
   return {
     reserveAddressesHash: finalHash.toString(),
