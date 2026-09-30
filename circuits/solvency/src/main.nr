@@ -142,8 +142,8 @@ fn test_reserve_address_commitment() {
         0
     ];
 
-    // Compute correct hash
-    let correct_hash = std::hash::pedersen_hash(reserve_addresses);
+    // Compute correct hash with Poseidon2
+    let correct_hash = Poseidon2::hash(reserve_addresses, MAX_RESERVE_ACCOUNTS);
 
     // Build tree
     let mut node_hash: [Field; TREE] = [0; TREE];
