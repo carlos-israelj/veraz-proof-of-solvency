@@ -11,6 +11,7 @@ import {
   BASE_FEE,
   xdr,
   scValToNative,
+  nativeToScVal,
 } from "@stellar/stellar-sdk";
 import { Server, Api } from "@stellar/stellar-sdk/rpc";
 
@@ -52,7 +53,8 @@ function bytesToScVal(bytes) {
   if (!(bytes instanceof Uint8Array)) {
     throw new Error(`bytesToScVal expects Uint8Array, got ${typeof bytes}`);
   }
-  return xdr.ScVal.scvBytes(bytes);
+  // Use nativeToScVal with type 'bytes' to create proper ScVal (matching verifier scripts pattern)
+  return nativeToScVal(bytes, { type: 'bytes' });
 }
 
 /**
