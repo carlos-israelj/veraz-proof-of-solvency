@@ -1,15 +1,17 @@
 {
   "network": "testnet",
-  "deployed_at": "2026-09-30T17:00:00Z",
+  "deployed_at": "2026-09-30T19:20:00Z",
   "verifier": "CAU5ZPZSJSASGEDMKPBQHL26AFEMH3DQWWTG52Y77L5NWWSECBHJAFKA",
-  "solvency_policy": "CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN",
+  "solvency_policy": "CBEEKR2YWL6Q2EESWXQ5VQGDV3L6NIJTHCV3UQMHOYEURBTNZ5AULTRH",
   "reserve_sac": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
   "reserve_accounts": ["GCY4CQHYSGI2MKE24R6ASMSX6EN6VQDYQZIC2NG3FSLJML6ELPFQAPKT"],
   "freshness_window": 100,
   "aquarius_pools": [],
   "defindex_vaults": [],
-  "deployment_tx": "48619a38da296839e871245bc063b84356a0db72663bb6ad744ed80e8cb0bb25",
-  "initialization_tx": "af92e55e9572330636121e4a1efde46d949751c6fb2db10db0337e989145e7c0",
-  "explorer_url": "https://stellar.expert/explorer/testnet/contract/CDQGARHIY3ISKQXPATDGTB2CKJ4HWO7QNTECN6VIEFVLE6UNNUD4WFLN",
-  "note": "Redeployed with Poseidon2 hash (CAP-75 standard) for reserve_addresses_hash validation"
+  "deployment_tx": "32f901146a28779f19abdb8a76b0fcaf2e39c4a11e70227c9dfb27c2ada27ac1",
+  "initialization_tx": "d1926f08a2af9b704130df2a36611b5f40fd46b69228bce68af02cf5005c0ef0",
+  "wasm_hash": "e6ba18ffecd767b360514d96c531d6b90732738bb3f1affaf732e704776be606",
+  "wasm_size": 26151,
+  "explorer_url": "https://stellar.expert/explorer/testnet/contract/CBEEKR2YWL6Q2EESWXQ5VQGDV3L6NIJTHCV3UQMHOYEURBTNZ5AULTRH",
+  "note": "Redeployed with 128-byte public inputs (root + liabilities + ledger_seq + reserve_addresses_hash) using Poseidon2 hash (CAP-75 standard)"
 }
