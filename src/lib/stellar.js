@@ -106,9 +106,10 @@ export async function querySolvent(contractId) {
 // Atestación: el emisor envía (public_inputs, proof) al contrato. Firma con la wallet conectada.
 export async function attest({ contractId, publicInputs, proof, sourceAddress, signTransactionFn }) {
   // Validaciones de formato antes de enviar a la blockchain
-  if (!(publicInputs instanceof Uint8Array) || publicInputs.length !== 96) {
+  // UPDATED: Changed from 96 to 128 bytes to support reserve_addresses_hash (4th public input)
+  if (!(publicInputs instanceof Uint8Array) || publicInputs.length !== 128) {
     throw new Error(
-      `Public inputs inválidos: se esperan exactamente 96 bytes, recibidos ${publicInputs?.length ?? "undefined"}. Verifica el formato del prover.`
+      `Public inputs inválidos: se esperan exactamente 128 bytes (con reserve_addresses_hash), recibidos ${publicInputs?.length ?? "undefined"}. Verifica el formato del prover.`
     );
   }
   // El tamaño del proof depende de la versión de bb.js y el circuito — dejamos que el verifier lo valide
