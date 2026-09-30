@@ -49,3 +49,40 @@ jobs:
           user_email: 'github-actions[bot]@users.noreply.github.com'
           enable_jekyll: false
           cname: veraz-pos.xyz
+
+      - name: Verify Pages deployment
+        run: |
+          echo "Waiting 30 seconds for Pages to process..."
+          sleep 30
+
+          # Check if a Pages deployment was triggered in the last 2 minutes
+          PAGES_RUN=$(gh run list --workflow="pages-build-deployment" --limit 1 --json createdAt,status --jq '.[0]')
+          CREATED_AT=$(echo $PAGES_RUN | jq -r '.createdAt')
+          STATUS=$(echo $PAGES_RUN | jq -r '.status')
+
+          # Calculate time difference
+          CREATED_TIMESTAMP=$(date -d "$CREATED_AT" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$CREATED_AT" +%s)
+          CURRENT_TIMESTAMP=$(date +%s)
+          TIME_DIFF=$((CURRENT_TIMESTAMP - CREATED_TIMESTAMP))
+
+          echo "Last Pages deployment: $CREATED_AT (${TIME_DIFF}s ago)"
+          echo "Status: $STATUS"
+
+          # If no recent deployment or stuck in queue, trigger manually
+          if [ $TIME_DIFF -gt 120 ] || [ "$STATUS" = "queued" ]; then
+            echo "⚠️  Pages deployment not triggered or stuck. Forcing redeploy..."
+
+            # Fetch latest gh-pages
+            git fetch origin gh-pages
+
+            # Create empty commit to trigger Pages
+            git checkout gh-pages
+            git commit --allow-empty -m "chore: trigger Pages deployment (auto-recovery)"
+            git push origin gh-pages
+
+            echo "✅ Forced Pages deployment triggered"
+          else
+            echo "✅ Pages deployment is active"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
