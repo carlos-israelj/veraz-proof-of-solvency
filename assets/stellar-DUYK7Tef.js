@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./index-BzKFoebV.js","./index-4rA93MZs.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
-import { N as _, R as O, C as m, T as p, B as A, A as T, _ as U, a as N, s as b, S as P, __tla as __tla_0 } from "./index-4rA93MZs.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./index-r3JVd0VA.js","./index-DKxV6pmJ.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
+import { N as C, R as O, C as m, T as p, B as A, A as T, _ as U, a as N, s as b, S as P, __tla as __tla_0 } from "./index-DKxV6pmJ.js";
 let $, g, x, k, M;
 let __tla = Promise.all([
     (()=>{
@@ -11,7 +11,7 @@ let __tla = Promise.all([
     let l, q, V;
     g = {
         rpcUrl: "https://soroban-testnet.stellar.org",
-        networkPassphrase: _.TESTNET
+        networkPassphrase: C.TESTNET
     };
     l = new O(g.rpcUrl);
     q = "GB6NVEN5HSUBKMYCE5ZOWSK5K23TBWRUQLZY3KNMXUZ3AQ2ESC4MY4AQ";
@@ -59,7 +59,7 @@ let __tla = Promise.all([
         }
     };
     $ = async function({ contractId: e, publicInputs: t, proof: o, sourceAddress: u, signTransactionFn: a }) {
-        if (!(t instanceof Uint8Array) || t.length !== 96) throw new Error(`Public inputs inválidos: se esperan exactamente 96 bytes, recibidos ${t?.length ?? "undefined"}. Verifica el formato del prover.`);
+        if (!(t instanceof Uint8Array) || t.length !== 128) throw new Error(`Public inputs inválidos: se esperan exactamente 128 bytes (con reserve_addresses_hash), recibidos ${t?.length ?? "undefined"}. Verifica el formato del prover.`);
         if (!(o instanceof Uint8Array) || o.length === 0) throw new Error("Proof inválido: el proof está vacío o no es un Uint8Array.");
         o.length !== 14592 && console.warn(`⚠️ Proof size: ${o.length} bytes (esperados 14592 para UltraHonk). El verifier on-chain determinará si es válido.`);
         const d = await l.getAccount(u), n = new m(e);
@@ -93,7 +93,7 @@ let __tla = Promise.all([
         if (!e || e.length === 0) throw new Error("At least one reserve address is required");
         if (e.length > 5) throw new Error("Maximum 5 reserve addresses allowed");
         const { BarretenbergSync: u, Fr: a } = await U(async ()=>{
-            const { BarretenbergSync: r, Fr: c } = await import("./index-BzKFoebV.js").then(async (m)=>{
+            const { BarretenbergSync: r, Fr: c } = await import("./index-r3JVd0VA.js").then(async (m)=>{
                 await m.__tla;
                 return m;
             });
@@ -103,9 +103,9 @@ let __tla = Promise.all([
             };
         }, __vite__mapDeps([0,1,2]), import.meta.url), d = await u.initSingleton(), n = [];
         for (const r of e){
-            const s = new TextEncoder().encode(r), y = await crypto.subtle.digest("SHA-256", s), R = Array.from(new Uint8Array(y));
+            const s = new TextEncoder().encode(r), y = await crypto.subtle.digest("SHA-256", s), _ = Array.from(new Uint8Array(y));
             let E = 0n;
-            for (const C of R)E = E << 8n | BigInt(C);
+            for (const R of _)E = E << 8n | BigInt(R);
             E = E % o, n.push(E.toString());
         }
         for(; n.length < 5;)n.push("0");
