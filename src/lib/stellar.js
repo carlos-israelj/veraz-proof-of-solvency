@@ -124,10 +124,19 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress, s
   const account = await rpc.getAccount(sourceAddress);
   const contract = new Contract(contractId);
 
-  // Contract.call() expects ScVal wrapper objects with toXdrObject() method
-  // nativeToScVal returns ScValBytes which has toXdrObject()
-  const piScVal = nativeToScVal(publicInputs, { type: 'bytes' });
-  const proofScVal = nativeToScVal(proof, { type: 'bytes' });
+  // Try using Buffer explicitly (browser polyfill from vite config)
+  const piBuffer = Buffer.from(publicInputs);
+  const proofBuffer = Buffer.from(proof);
+
+  console.log(`[attest] Created Buffers:`, {
+    piLength: piBuffer.length,
+    proofLength: proofBuffer.length,
+    piIsBuffer: Buffer.isBuffer(piBuffer),
+    proofIsBuffer: Buffer.isBuffer(proofBuffer)
+  });
+
+  const piScVal = nativeToScVal(piBuffer, { type: 'bytes' });
+  const proofScVal = nativeToScVal(proofBuffer, { type: 'bytes' });
 
   console.log(`[attest] Created ScVal wrappers:`, {
     piType: piScVal?.constructor?.name,
