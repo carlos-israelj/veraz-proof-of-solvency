@@ -11,6 +11,7 @@ import {
   BASE_FEE,
   xdr,
   scValToNative,
+  nativeToScVal,
 } from "@stellar/stellar-sdk";
 import { Server, Api } from "@stellar/stellar-sdk/rpc";
 
@@ -123,15 +124,23 @@ export async function attest({ contractId, publicInputs, proof, sourceAddress, s
   const account = await rpc.getAccount(sourceAddress);
   const contract = new Contract(contractId);
 
-  // Contract.call() in stellar-sdk v17 accepts native JS values directly
-  // and converts them internally - no need for manual ScVal conversion
-  console.log(`[attest] Passing bytes directly to contract.call()`);
+  // Contract.call() expects ScVal wrapper objects with toXdrObject() method
+  // nativeToScVal returns ScValBytes which has toXdrObject()
+  const piScVal = nativeToScVal(publicInputs, { type: 'bytes' });
+  const proofScVal = nativeToScVal(proof, { type: 'bytes' });
+
+  console.log(`[attest] Created ScVal wrappers:`, {
+    piType: piScVal?.constructor?.name,
+    proofType: proofScVal?.constructor?.name,
+    piHasToXdr: typeof piScVal?.toXdrObject,
+    proofHasToXdr: typeof proofScVal?.toXdrObject
+  });
 
   let tx = new TransactionBuilder(account, {
     fee: BASE_FEE,
     networkPassphrase: config.networkPassphrase,
   })
-    .addOperation(contract.call("attest", publicInputs, proof))
+    .addOperation(contract.call("attest", piScVal, proofScVal))
     .setTimeout(60)
     .build();
 
