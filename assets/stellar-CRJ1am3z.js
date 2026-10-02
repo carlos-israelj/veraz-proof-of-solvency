@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./index-BXLPf079.js","./index-DBuvzTQx.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
-import { N as B, R as b, C as A, n as T, T as v, B as C, A as _, _ as O, a as P, s as N, __tla as __tla_0 } from "./index-DBuvzTQx.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./index-CN-L86ny.js","./index-DLCSQN-i.js","./index-CmOZt9DE.css"])))=>i.map(i=>d[i]);
+import { N as B, R as b, C as A, n as T, T as v, B as C, A as _, _ as O, a as P, s as N, __tla as __tla_0 } from "./index-DLCSQN-i.js";
 let L, y, X, M, $;
 let __tla = Promise.all([
     (()=>{
@@ -106,7 +106,7 @@ let __tla = Promise.all([
         if (!e || e.length === 0) throw new Error("At least one reserve address is required");
         if (e.length > 5) throw new Error("Maximum 5 reserve addresses allowed");
         const { BarretenbergSync: p, Fr: a } = await O(async ()=>{
-            const { BarretenbergSync: t, Fr: g } = await import("./index-BXLPf079.js").then(async (m)=>{
+            const { BarretenbergSync: t, Fr: g } = await import("./index-CN-L86ny.js").then(async (m)=>{
                 await m.__tla;
                 return m;
             });
