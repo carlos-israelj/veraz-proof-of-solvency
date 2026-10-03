@@ -12,6 +12,7 @@ use soroban_sdk::{Address, Env, IntoVal, Symbol, TryIntoVal, Vec};
 /// Represents the total managed funds information returned by DeFindex vault
 /// According to DeFindex docs, fetch_total_managed_funds returns Vec<AssetAllocation>
 /// For simplicity in Veraz, we only care about the total_amount of the first (and typically only) asset
+#[allow(dead_code)]  // Will be used when DeFindex integration is fully tested on mainnet
 #[derive(Debug, Clone)]
 struct AssetAllocation {
     total_amount: i128,

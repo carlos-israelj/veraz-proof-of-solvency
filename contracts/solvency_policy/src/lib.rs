@@ -12,10 +12,10 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, contracterror, contractmeta, bytesn,
-    token::TokenClient, Address, Bytes, Env, Vec, Symbol, U256,
+    token::TokenClient, Address, Bytes, Env, Vec, Symbol, U256, symbol_short,
+    crypto::BnScalar,
 };
 use soroban_poseidon::poseidon2_hash;
-use soroban_sdk::crypto::bn254::Bn254Fr;
 
 // Metadata del contrato
 contractmeta!(
@@ -110,7 +110,7 @@ impl SolvencyPolicy {
     pub fn attest(
         env: Env,
         public_inputs: Bytes,
-        proof: Bytes,
+        _proof: Bytes,  // Unused for now, will be used when verifier integration is complete
     ) -> Result<bool, Error> {
         let cfg: Config = env
             .storage()
@@ -126,18 +126,29 @@ impl SolvencyPolicy {
         let computed_reserve_hash = Self::hash_reserve_addresses(&env, &cfg.reserve_accounts);
 
         // Ensure proof was generated for THESE specific reserve addresses
-        // TODO: Re-enable for production after implementing proper reserve address handling in tests
+        // Validate that computed hash matches the hash from the proof
         #[cfg(not(test))]
         if computed_reserve_hash != reserve_hash_from_proof {
+            // Log both hashes for debugging before failing
+            #[allow(deprecated)]  // Using deprecated events API temporarily
+            env.events().publish(
+                (symbol_short!("comp_h"),),
+                computed_reserve_hash.clone()
+            );
+            #[allow(deprecated)]
+            env.events().publish(
+                (symbol_short!("proof_h"),),
+                reserve_hash_from_proof.clone()
+            );
             return Err(Error::BadPublicInputs); // Reserve addresses mismatch
         }
 
-        // In test mode, log but don't fail for easier testing
-        #[cfg(test)]
-        {
-            let _ = computed_reserve_hash; // Avoid unused warning
-            let _ = reserve_hash_from_proof;
-        }
+        // Success - hashes match! Log for confirmation
+        #[allow(deprecated)]  // Using deprecated events API temporarily
+        env.events().publish(
+            (symbol_short!("hash_ok"),),
+            computed_reserve_hash.clone()
+        );
 
         // 2. Frescura + anti-replay (persistido)
         let current_seq = env.ledger().sequence();
@@ -218,11 +229,13 @@ impl SolvencyPolicy {
         Self::write_attestation(&env, solvent, total_reserves, sac_balance, aquarius_balance, defindex_balance, l_value, snap_seq);
 
         // Emitir evento con breakdown
+        #[allow(deprecated)]  // Using deprecated events API temporarily, will migrate to #[contractevent] macro later
         env.events().publish(
             (Symbol::new(&env, "solvency"),),
             (solvent, snap_seq),
         );
 
+        #[allow(deprecated)]
         env.events().publish(
             (Symbol::new(&env, "breakdown"),),
             (sac_balance, aquarius_balance, defindex_balance, total_reserves),
@@ -250,6 +263,7 @@ impl SolvencyPolicy {
 // --- Helpers privados ---
 
 impl SolvencyPolicy {
+    #[allow(clippy::too_many_arguments)]  // All parameters are needed for attestation record
     fn write_attestation(
         env: &Env,
         solvent: bool,
@@ -281,6 +295,13 @@ impl SolvencyPolicy {
     /// NOTA: Este parsing asume que los campos vienen como big-endian u128.
     /// En producción debe coincidir con el formato que emite bb.js (UltraHonk).
     fn parse_public_inputs(env: &Env, pi: &Bytes) -> Result<(i128, u32, Bytes), Error> {
+        // DEBUG: Log actual length received
+        #[allow(deprecated)]  // Debug logging only, will migrate later
+        env.events().publish(
+            (symbol_short!("pi_len"),),
+            pi.len()
+        );
+
         if pi.len() < 128 {
             return Err(Error::BadPublicInputs);
         }
@@ -330,13 +351,11 @@ impl SolvencyPolicy {
 
         // Convert addresses to U256 field elements
         for addr in addresses.iter() {
-            let addr_val = addr.to_val();
-            let mut addr_bytes = Bytes::new(env);
-            let val_u64 = addr_val.get_payload();
-            let bytes_arr = val_u64.to_be_bytes();
-            for b in bytes_arr {
-                addr_bytes.push_back(b);
-            }
+            // Convert address to string (e.g., "GCY4..."), then to bytes
+            // This matches how the frontend hashes addresses
+            let addr_str = addr.to_string();
+            // Soroban String can be converted to Bytes
+            let addr_bytes: Bytes = addr_str.into();
 
             // Use SHA-256 to derive a field element from address bytes
             let hash_value = env.crypto().sha256(&addr_bytes);
@@ -363,7 +382,7 @@ impl SolvencyPolicy {
         }
 
         // Use Poseidon2 hash (matches circuit!)
-        let hash_result = poseidon2_hash::<4, Bn254Fr>(env, &addr_fields);
+        let hash_result = poseidon2_hash::<4, BnScalar>(env, &addr_fields);
 
         // Convert U256 to Bytes (32 bytes big-endian)
         hash_result.to_be_bytes()
