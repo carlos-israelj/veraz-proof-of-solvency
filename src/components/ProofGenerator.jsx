@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '../contexts/WalletContext';
 import DataStream from './DataStream';
 
-export default function ProofGenerator({ balances, contractId, address, reserveAddresses, onSuccess, onError }) {
+export default function ProofGenerator({ balances, contractId, address, reserveAddresses, onSuccess, onError, onProgress }) {
   const { signTransaction } = useWallet();
   const [stage, setStage] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -38,6 +38,13 @@ export default function ProofGenerator({ balances, contractId, address, reserveA
     }, 4000);
     return () => clearInterval(triviaInterval);
   }, []);
+
+  // Notify parent component when stage changes
+  useEffect(() => {
+    if (onProgress) {
+      onProgress(stage);
+    }
+  }, [stage, onProgress]);
 
   async function generateAndSubmitProof() {
     try {

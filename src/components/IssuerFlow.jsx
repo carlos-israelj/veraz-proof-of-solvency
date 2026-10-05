@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'wouter';
 import { useWallet } from '../contexts/WalletContext';
 import ProofGenerator from './ProofGenerator';
 
@@ -17,7 +18,7 @@ const N = 8; // Circuit supports 8 holders
 const DEFAULT_CONTRACT = 'CDQ4RYKUQ3XTCBL2ORGCDMXHFZNBF3OU4AJWX7I5PYWGANELQO4G4DOC';
 const DEFAULT_RESERVE_ADDRESS = 'GCY4CQHYSGI2MKE24R6ASMSX6EN6VQDYQZIC2NG3FSLJML6ELPFQAPKT';
 
-export default function IssuerFlow({ onBack }) {
+export default function IssuerFlow() {
   const { publicKey, isConnected, connectWallet: walletConnect, disconnect } = useWallet();
 
   // State
@@ -83,6 +84,7 @@ export default function IssuerFlow({ onBack }) {
   function startTour() {
     setTourOpen(true);
     setTourIdx(0);
+    setTourSpot(null);
   }
 
   function skipTour() {
@@ -91,7 +93,16 @@ export default function IssuerFlow({ onBack }) {
 
   function nextTour() {
     if (tourIdx < TOUR_STEPS.length - 1) {
-      setTourIdx(tourIdx + 1);
+      const nextIdx = tourIdx + 1;
+      const nextStep = TOUR_STEPS[nextIdx];
+
+      // Auto-advance to step if needed
+      if (nextStep.step !== null && step !== nextStep.step) {
+        setStep(nextStep.step);
+      }
+
+      setTourIdx(nextIdx);
+      setTourSpot(null);
     } else {
       setTourOpen(false);
     }
@@ -99,8 +110,63 @@ export default function IssuerFlow({ onBack }) {
 
   function prevTour() {
     if (tourIdx > 0) {
-      setTourIdx(tourIdx - 1);
+      const prevIdx = tourIdx - 1;
+      const prevStep = TOUR_STEPS[prevIdx];
+
+      // Auto-go back to step if needed
+      if (prevStep.step !== null && step !== prevStep.step) {
+        setStep(prevStep.step);
+      }
+
+      setTourIdx(prevIdx);
+      setTourSpot(null);
     }
+  }
+
+  // Compute spotlight position for tour
+  function computeSpot(idx, scroll = false) {
+    const t = TOUR_STEPS[idx];
+    if (!t) return null;
+
+    const el = document.getElementById(t.el);
+    if (!el) return null;
+
+    let r = el.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const maxH = Math.min(160, vh * 0.3);
+    const tall = r.height > vh * 0.5;
+    const pad = 8;
+    const pw = 340;
+    const popoverEl = document.getElementById('tour-popover');
+    const ph = popoverEl && popoverEl.offsetHeight > 50 ? popoverEl.offsetHeight + 32 : 280;
+
+    let hgt = tall ? maxH : r.height;
+
+    // Auto-scroll element into view if needed
+    if (scroll) {
+      const fitsBelowAtTop = 100 + hgt + pad + 12 + ph < vh;
+      const want = fitsBelowAtTop ? 100 : Math.max(16, vh - 16 - hgt);
+
+      if (Math.abs(r.top - want) > 4) {
+        window.scrollBy({ top: r.top - want, behavior: 'smooth' });
+        r = el.getBoundingClientRect();
+      }
+    }
+
+    // Determine popover position (below or above spotlight)
+    const below = r.top + hgt + pad + 12 + ph < vh;
+    const px = Math.min(Math.max(16, r.left), window.innerWidth - pw - 16);
+    const py = below ? r.top + hgt + pad + 12 : Math.max(16, r.top - pad - 12 - ph);
+
+    return {
+      idx,
+      x: r.left - pad,
+      y: r.top - pad,
+      w: r.width + pad * 2,
+      h: hgt + pad * 2,
+      px,
+      py
+    };
   }
 
   // Reserve management
@@ -193,6 +259,10 @@ export default function IssuerFlow({ onBack }) {
     setStep(1);
   }
 
+  function handleProofProgress(stage) {
+    setProveStage(stage);
+  }
+
   // Prove stage controls
   function advanceStage() {
     if (proveStage < 6) {
@@ -239,6 +309,34 @@ export default function IssuerFlow({ onBack }) {
     }
   }, [isConnected, step]);
 
+  // Tour spotlight positioning
+  useEffect(() => {
+    if (!tourOpen) return;
+
+    const updateSpot = () => {
+      const newSpot = computeSpot(tourIdx, !tourSpot || tourSpot.idx !== tourIdx);
+      if (newSpot && (!tourSpot ||
+          Math.abs(tourSpot.x - newSpot.x) > 0.5 ||
+          Math.abs(tourSpot.y - newSpot.y) > 0.5 ||
+          Math.abs(tourSpot.w - newSpot.w) > 0.5 ||
+          Math.abs(tourSpot.h - newSpot.h) > 0.5)) {
+        setTourSpot(newSpot);
+      }
+    };
+
+    // Initial positioning
+    updateSpot();
+
+    // Update on resize
+    const interval = setInterval(updateSpot, 40);
+    window.addEventListener('resize', updateSpot);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', updateSpot);
+    };
+  }, [tourOpen, tourIdx, step]);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -265,7 +363,7 @@ export default function IssuerFlow({ onBack }) {
         flexWrap: 'wrap'
       }}>
         {/* Logo */}
-        <a href="#" onClick={(e) => { e.preventDefault(); onBack(); }} style={{
+        <Link href="/" style={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: '10px',
@@ -283,7 +381,7 @@ export default function IssuerFlow({ onBack }) {
             letterSpacing: '-0.03em',
             lineHeight: 1
           }}>veraz</span>
-        </a>
+        </Link>
 
         {/* Nav */}
         <nav style={{
@@ -293,9 +391,9 @@ export default function IssuerFlow({ onBack }) {
           color: '#9AA39F',
           flexWrap: 'wrap'
         }}>
-          <a href="#" style={{ color: '#F4F5F3', textDecoration: 'none' }}>Issuer</a>
-          <a href="#" style={{ color: '#9AA39F', textDecoration: 'none' }}>Auditor</a>
-          <a href="#" style={{ color: '#9AA39F', textDecoration: 'none' }}>Integrations</a>
+          <Link href="/issuer" style={{ color: '#F4F5F3', textDecoration: 'none' }}>Issuer</Link>
+          <Link href="/auditor" style={{ color: '#9AA39F', textDecoration: 'none' }}>Auditor</Link>
+          <Link href="/integrations" style={{ color: '#9AA39F', textDecoration: 'none' }}>Integrations</Link>
           <a href="#" style={{ color: '#9AA39F', textDecoration: 'none' }}>API</a>
           <a href="#" style={{ color: '#9AA39F', textDecoration: 'none' }}>Docs</a>
         </nav>
@@ -417,9 +515,8 @@ export default function IssuerFlow({ onBack }) {
       }}>
         {/* Page Header */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); onBack(); }}
+          <Link
+            href="/"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -430,7 +527,7 @@ export default function IssuerFlow({ onBack }) {
               textDecoration: 'none',
               whiteSpace: 'nowrap'
             }}
-          >← Back to home</a>
+          >← Back to home</Link>
           <span style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: '11px',
@@ -1288,6 +1385,7 @@ export default function IssuerFlow({ onBack }) {
                 reserveAddresses={reserves.map(r => r.address)}
                 onSuccess={handleProofSuccess}
                 onError={handleProofError}
+                onProgress={handleProofProgress}
               />
             </div>
           </section>
@@ -1566,6 +1664,185 @@ export default function IssuerFlow({ onBack }) {
           </div>
         )}
       </main>
+
+      {/* Tour Overlay */}
+      {tourOpen && tourSpot && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 50,
+          pointerEvents: 'none'
+        }}>
+          {/* Scrim backdrop */}
+          <div
+            onClick={skipTour}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              pointerEvents: 'auto',
+              background: 'rgba(5,8,7,0.78)',
+              cursor: 'pointer'
+            }}
+          />
+
+          {/* Spotlight */}
+          <div style={{
+            position: 'fixed',
+            left: `${tourSpot.x}px`,
+            top: `${tourSpot.y}px`,
+            width: `${tourSpot.w}px`,
+            height: `${tourSpot.h}px`,
+            borderRadius: '14px',
+            boxShadow: '0 0 0 9999px rgba(5,8,7,0.78)',
+            outline: '1px solid #D4B36A',
+            transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)',
+            pointerEvents: 'none'
+          }} />
+
+          {/* Floating popover */}
+          <div
+            id="tour-popover"
+            style={{
+              position: 'fixed',
+              left: `${tourSpot.px}px`,
+              top: `${tourSpot.py}px`,
+              width: '340px',
+              maxWidth: 'calc(100vw - 32px)',
+              boxSizing: 'border-box',
+              pointerEvents: 'auto',
+              background: '#141918',
+              border: '1px solid #262C29',
+              borderRadius: '14px',
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px',
+              color: '#F4F5F3',
+              fontFamily: "'Geist', system-ui, sans-serif",
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            {/* Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '11px',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: '#D4B36A'
+              }}>
+                Demo tour · {tourIdx + 1}/{TOUR_STEPS.length}
+              </span>
+              <button
+                onClick={skipTour}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  border: 0,
+                  background: 'transparent',
+                  color: '#9AA39F',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              >Skip</button>
+            </div>
+
+            {/* Content */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px'
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontWeight: 600,
+                fontSize: '18px',
+                letterSpacing: '-0.02em'
+              }}>
+                {TOUR_STEPS[tourIdx].title}
+              </h3>
+              <p style={{
+                margin: 0,
+                fontSize: '14px',
+                color: '#9AA39F',
+                lineHeight: 1.5,
+                textWrap: 'pretty'
+              }}>
+                {TOUR_STEPS[tourIdx].body}
+              </p>
+            </div>
+
+            {/* Progress dots and navigation */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              {/* Progress dots */}
+              <div style={{
+                display: 'flex',
+                gap: '4px',
+                flex: 1
+              }}>
+                {TOUR_STEPS.map((_, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      width: '16px',
+                      height: '3px',
+                      borderRadius: '2px',
+                      background: i === tourIdx ? '#D4B36A' : '#262C29'
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Back button */}
+              {tourIdx > 0 && (
+                <button
+                  onClick={prevTour}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid #262C29',
+                    background: 'transparent',
+                    color: '#F4F5F3',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                >Back</button>
+              )}
+
+              {/* Next/Finish button */}
+              <button
+                onClick={nextTour}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  border: 0,
+                  background: '#F4F5F3',
+                  color: '#0B0F0E',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {tourIdx < TOUR_STEPS.length - 1 ? 'Next' : 'Finish'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Keyframe animations */}
       <style>{`
